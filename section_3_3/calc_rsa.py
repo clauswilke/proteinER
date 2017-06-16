@@ -56,6 +56,9 @@ def get_values(pdb_path, output_dssp):
             chain = string[11]
             # print(SAValue)
             number = int(SAValue)  #This turns the string fir the SA into an int type
+            if AA.islower():
+                # if the AA is a lowercase letter, then it's a cysteine
+                AA = "C"
             if AA != ( '!' or '*'):  #This takes out the missing gaps that dssp might put in
                 if AA != 'X':
                     max_acc = residue_max_acc[AA]  #This uses the dictionary to find the max SA for the amino acid at the current position (site)
