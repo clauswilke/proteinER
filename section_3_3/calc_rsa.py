@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
 '''
-NEEDS DOCSTRING
+This script parses an input PDB file and returns relative solvent accessibility
+values (RSA) and raw DSSP output.
+
+Author: Benjamin R. Jack
 '''
 
 import subprocess
-import sys
-
+import argparse
+import csv
 
 # Three letter to one letter amino acid code conversion
 RESDICT = {'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU': 'E', 'PHE': 'F', \
@@ -28,70 +31,76 @@ def run_dssp(pdb_path, output_dssp):
     '''
     Run mkdssp.
     '''
-    command = 'mkdssp' + ' -i ' + pdb_path + ' -o ' + output_dssp
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    process.wait()
+    command = ['mkdssp', '-i', pdb_path, '-o', output_dssp]
+    process = subprocess.call(command)
+    return process
 
-def parse_dssp(output_dssp):
+def parse_dssp_line(line):
     '''
-    This calculates the RSA values for a PDB using DSSP. It returns a list of
-    the amino acids and a list of their RSA values.
+    Extract values from a single line of DSSP output and calculate RSA.
     '''
-    with open(output_dssp, 'r') as dssp_file:
-        lines = dssp_file.readlines()
-        residue_number_list = []  # pdb residue numbers
-        solvent_acc_list = []  # solvent accessibility (SA) values
-        amino_acid_list = []  # single letter amino acids for each site
-        chain_list = []
-        no_rsa = 0
-    for line in lines[28:]:
-        solvent_acc = int(line[35:39])  # record SA value for given AA
-        amino_acid = line[13]  # retrieve amino acid
-        residue = line[6:10]
-        chain = line[11]
-        if amino_acid.islower():
-            # if the AA is a lowercase letter, then it's a cysteine
-            amino_acid = "C"
-        if amino_acid == ('!' or '*'):
-            # Ignore gaps or missing data that dssp might insert
-            no_rsa = no_rsa + 1
-            continue
-        if amino_acid != 'X':
-            max_acc = RES_MAX_ACC[amino_acid]  # Find max SA for residue
-            solvent_acc_list.append(solvent_acc / max_acc)  # Normalize SA
-        elif amino_acid == 'X':
-            solvent_acc_list.append(0)
-        # Append data to lists
-        amino_acid_list.append(amino_acid)
-        residue_number_list.append(residue)
-        chain_list.append(chain)
-
-    return (residue_number_list, chain_list, amino_acid_list, solvent_acc_list)
-
-
-def main(argv):
-    '''
-    Docstring needed
-    '''
-    if len(argv) != 4:
-        print("\n\nUsage:\n\n     "+argv[0]+" <input pdb file> <output dssp ASA> <output RSA>")
+    solvent_acc = int(line[35:39])  # record SA value for given AA
+    amino_acid = line[13].strip()  # retrieve amino acid
+    residue = line[6:10].strip()
+    chain = line[11].strip()
+    if amino_acid.islower():
+        # if the AA is a lowercase letter, then it's a cysteine
+        amino_acid = "C"
+    if amino_acid in ['X', '!', '*']:
+        rsa = 0
     else:
-        pdb_path = argv[1]
-        output_dssp = argv[2]
-        output_rsa = argv[3]
-        run_dssp(pdb_path, output_dssp)
-        [residue_number_list,
-         chain_list,
-         amino_acid_list,
-         solvent_acc_list] = parse_dssp(output_dssp)
-        rsa_outputfile = open(output_rsa, 'w')
-        rsa_outputfile.write('Residue,Amino_Acid,Chain,RSA\n')
-        for i, amino_acid in enumerate(amino_acid_list):
-            rsa_outputfile.write(str(residue_number_list[i]) + ',' +
-                                 str(amino_acid) + ',' + chain_list[i] + ',' +
-                                 str(solvent_acc_list[i]) + '\n')
-        return
+        max_acc = RES_MAX_ACC[amino_acid]  # Find max SA for residue
+        rsa = solvent_acc / max_acc # Normalize SA
+    return residue, amino_acid, chain, rsa
 
+def parse_dssp(raw_dssp_output):
+    '''
+    Parse a DSSP output file and return a dictionary of amino acids, PDB residue
+    number, chain, and RSA.
+    '''
+    with open(raw_dssp_output, 'r') as dssp_file:
+        lines = dssp_file.readlines()
+        output = {'residue': [],  # pdb residue numbers
+                  'amino_acid': [],  # amino acid
+                  'chain': [],  #  chain
+                  'rsa': []}  #  solvent accessibiity values
+    for line in lines[28:]:
+        # Skip first 28 lines of header info
+        residue, amino_acid, chain, rsa = parse_dssp_line(line)
+        if amino_acid not in ['*', '!']:
+            # Append data to lists
+            output['amino_acid'].append(amino_acid)
+            output['residue'].append(residue)
+            output['chain'].append(chain)
+            output['rsa'].append(rsa)
+
+    return output
+
+def main():
+    '''
+    Run mkdssp and parse output from input PDB.
+    '''
+    parser = argparse.ArgumentParser(
+        description='Calculate RSA values for an input PDB.')
+    parser.add_argument('pdb', metavar='<PDB path>', type=str,
+                        help='input pdb file')
+    parser.add_argument('prefix', metavar='<output prefix>', type=str,
+                        help='prefix for output files')
+    args = parser.parse_args()
+    # Define output file names
+    output_rsa = args.prefix + '.rsa.csv'
+    asa_file = args.prefix + '.asa.txt'
+    if run_dssp(args.pdb, asa_file):
+        # Check for DSSP errors
+        raise RuntimeError("Call to DSSP failed.")
+    else:
+        # DSSP succeeded, write output to CSV
+        output_dict = parse_dssp(asa_file)
+        with open(output_rsa, 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(output_dict.keys())
+            output_dict_zip = zip(*output_dict.values())
+            writer.writerows(output_dict_zip)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
