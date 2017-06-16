@@ -47,6 +47,7 @@ def parse_dssp_line(line):
         # if the AA is a lowercase letter, then it's a cysteine
         amino_acid = "C"
     if amino_acid in ['X', '!', '*']:
+        # Masked or missing amino acids are assigned an RSA of 0
         rsa = 0
     else:
         max_acc = RES_MAX_ACC[amino_acid]  # Find max SA for residue
@@ -68,7 +69,7 @@ def parse_dssp(raw_dssp_output):
         # Skip first 28 lines of header info
         residue, amino_acid, chain, rsa = parse_dssp_line(line)
         if amino_acid not in ['*', '!']:
-            # Append data to lists
+            # Append amino acid data to list if it's not masked or missing
             output['amino_acid'].append(amino_acid)
             output['residue'].append(residue)
             output['chain'].append(chain)
