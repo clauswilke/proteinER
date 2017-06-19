@@ -7,6 +7,7 @@ values (RSA) and raw DSSP output.
 Author: Benjamin R. Jack
 '''
 
+import os
 import subprocess
 import argparse
 import csv
@@ -52,7 +53,10 @@ def parse_dssp_line(line):
     else:
         max_acc = RES_MAX_ACC[amino_acid]  # Find max SA for residue
         rsa = solvent_acc / max_acc # Normalize SA
-    return residue, amino_acid, chain, rsa
+    return {'residue': residue,
+            'amino_acid': amino_acid,
+            'chain': chain,
+            'rsa': rsa}
 
 def parse_dssp(raw_dssp_output):
     '''
@@ -61,36 +65,33 @@ def parse_dssp(raw_dssp_output):
     '''
     with open(raw_dssp_output, 'r') as dssp_file:
         lines = dssp_file.readlines()
-        output = {'residue': [],  # pdb residue numbers
-                  'amino_acid': [],  # amino acid
-                  'chain': [],  #  chain
-                  'rsa': []}  #  solvent accessibiity values
+        output = []  # list of dictionaries for output
     for line in lines[28:]:
         # Skip first 28 lines of header info
-        residue, amino_acid, chain, rsa = parse_dssp_line(line)
-        if amino_acid not in ['*', '!']:
+        output_line = parse_dssp_line(line)
+        if output_line['amino_acid'] not in ['*', '!']:
             # Append amino acid data to list if it's not masked or missing
-            output['amino_acid'].append(amino_acid)
-            output['residue'].append(residue)
-            output['chain'].append(chain)
-            output['rsa'].append(rsa)
+            output.append(output_line)
 
     return output
 
 def main():
     '''
-    Run mkdssp and parse output from input PDB.
+    Run mkdssp on input PDB and parse output into CSV with RSA values.
     '''
     parser = argparse.ArgumentParser(
         description='Calculate RSA values for an input PDB.')
     parser.add_argument('pdb', metavar='<PDB path>', type=str,
                         help='input pdb file')
-    parser.add_argument('prefix', metavar='<output prefix>', type=str,
+    parser.add_argument('-o', metavar='<output prefix>', type=str,
                         help='prefix for output files')
     args = parser.parse_args()
     # Define output file names
-    output_rsa = args.prefix + '.rsa.csv'
-    asa_file = args.prefix + '.asa.txt'
+    if args.o is None:
+        # If no output prefix given, assign prefix using input filename
+        args.o = os.path.splitext(os.path.basename(args.pdb))[0]
+    output_rsa = args.o + '.rsa.csv'
+    asa_file = args.o + '.asa.txt'
     if run_dssp(args.pdb, asa_file):
         # Check for DSSP errors
         raise RuntimeError("Call to DSSP failed.")
@@ -98,10 +99,10 @@ def main():
         # DSSP succeeded, write output to CSV
         output_dict = parse_dssp(asa_file)
         with open(output_rsa, 'w') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(output_dict.keys())
-            output_dict_zip = zip(*output_dict.values())
-            writer.writerows(output_dict_zip)
+            writer = csv.DictWriter(csvfile, fieldnames=['residue', 'chain',
+                                                         'amino_acid', 'rsa'])
+            writer.writeheader()
+            writer.writerows(output_dict)
 
 if __name__ == "__main__":
     main()
