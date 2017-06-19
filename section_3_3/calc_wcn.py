@@ -1,166 +1,132 @@
 #!/usr/bin/python
-import sys, subprocess, os
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
-from Bio.PDB.Polypeptide import *
-from Bio.PDB import *
-#from Bio.PDB import PDBParser
-#from Bio.PDB import PDBIO
-#from Bio.PDB import Dice
-from collections import OrderedDict
-import math
-import numpy
-# import get_wcn_invsq
+import sys
+import os
+import csv
+import warnings
+import argparse
+from Bio.PDB import PDBParser
 
-# This code reads in a given input PDB file and outputs, in a given output file, the coordinates of backbone atoms: C, CA, O, N and the CB atom and the Center-Of-Mass (COM) of the side chains and the COM of the BackBone of each residue.
-# Also on the output is the Bfactors for each of the corresponding atoms and the average Bfactor for the case Side-Chain (SC) COM and the entire Amino Acid (AA) COM (including backbone atoms).
-#
-# INPUT:  pdb files in ../structures/*  and the name of the output file.
-# OUTPUT: A file containing all relevant residue properties described above, in chronological order of pdbs in the directory.
-# Amir Shahmoradi, 12:10 PM, Tuesday Aug 12 2014, Wilke Lab, iCMB, The University of Texas at Austin.
+# Three letter to one letter amino acid code conversion
+RESDICT = {'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU': 'E', 'PHE': 'F', \
+           'GLY': 'G', 'HIS': 'H', 'ILE': 'I', 'LYS': 'K', 'LEU': 'L', \
+           'MET': 'M', 'ASN': 'N', 'PRO': 'P', 'GLN': 'Q', 'ARG': 'R', \
+           'SER': 'S', 'THR': 'T', 'VAL': 'V', 'TRP': 'W', 'TYR': 'Y'}
 
-def main(argv):
-    if len( argv ) != 3:
-        print("     ", argv[0], "<input PDB file>", "<output summary file>", '\n')
-        sys.exit('Program stopped.\n')
-    else:
-        pdb_in  = argv[1]  # path for the input PDB file to be read
-        sum_out = argv[2]   # summary file containing all residue coordinate & Bfactor data
+def inv_sq_distance(coord1, coord2):
+    '''
+    Doc string
+    '''
+    distance = 0.0
+    for i in range(len(coord1)):
+        distance += (coord1[i]-coord2[i])**2
+    return 1/distance
 
+def calculate_wcn(residues):
+    '''
+    Doc string
+    '''
+    for residue in residues:
+        wcn_ca = 0
+        wcn_sc = 0
+        for other_residue in residues:
+            if residue != other_residue:
+                wcn_ca += inv_sq_distance(residue['coord_ca'],
+                                          other_residue['coord_ca'])
+                wcn_sc += inv_sq_distance(residue['sidechain_center'],
+                                          other_residue['sidechain_center'])
+        residue['wcn_ca'] = wcn_ca
+        residue['wcn_sc'] = wcn_sc
 
-    sum_out_file = open(sum_out,'w')
-    sum_out_file.write('resnam'+ ',' + 'resnum,' +
-                      'wcnSC' + ','
-                      'wcnCA\n') 
+    return residues
 
+def process_residue(residue, structure):
+    '''
+    Doc string
+    '''
+    output_dict = {}
+    atoms_seen = []
+    output_dict['amino_acid'] = RESDICT[residue.resname]
+    output_dict['residue'] = residue.get_id()[1]
+    output_dict['chain'] = residue.get_full_id()[2]
+    sidechain_coords = []
+    for atom in structure.get_atoms():
+        # atom.name is equivalent to atom.get_id()
+        if atom.parent.id != residue.id:
+            continue
+        atoms_seen.append(atom.name)
+        if atom.name == 'CA':
+            output_dict['coord_ca'] = atom.get_coord()
+        if atom.name not in ['C', 'CA', 'O', 'N']:
+            sidechain_coords.append(atom.get_coord())
 
-    p = PDBParser()
-    pdb_name = os.path.basename(pdb_in).split('.')[0].upper()
-    structure = p.get_structure(pdb_name,pdb_in)
+    warning_message = "Missing {} in residue (" + \
+                        str(output_dict['residue']) + ", " + \
+                        str(output_dict['amino_acid']) + ")"
 
+    for mainchain_atom in ['N', 'C', 'O']:
+        if mainchain_atom not in atoms_seen:
+            warnings.warn(warning_message.format(mainchain_atom),
+                          RuntimeWarning)
+    if 'coord_ca' not in output_dict:
+        raise RuntimeError(warning_message.format('CA') +
+                           '. Cannot calculate C-alpha WCN.')
+
+    if len(sidechain_coords) == 0:
+        if output_dict['amino_acid'] != 'G':
+            warnings.warn(warning_message.format('sidechain') +
+                          '. Using CA instead.', RuntimeWarning)
+        sidechain_coords.append(output_dict['coord_ca'])
+
+    # Calculate side chain properties:
+    output_dict['sidechain_size'] = len(sidechain_coords)
+    output_dict['sidechain_center'] = sum(sidechain_coords)/\
+                                        output_dict['sidechain_size']
+
+    return output_dict
+
+def collect_coordinates(structure):
+    '''
+    Doc string
+    '''
     output_list = []
-
-    resnam   = []     # A list containing all Residue Names
-    resnum   = []     # A list containing all Residue Numbers
-    reschain = []     # A list containing the chain name in which the residues lie
-    crdN    = []
-    crdCA   = []
-    crdC    = []
-    crdO    = []
-    crdCB   = []
-    crdAA   = []
-    crdSC   = []
-    bfN     = []
-    bfCA    = []
-    bfC     = []
-    bfO     = []
-    bfCB    = []
-    bfAA    = []
-    bfSC    = []
-    sizeSC  = []   # A list containing the total number of atoms in each residue Side Chain (SC).
-    sizeAA  = []   # A list containing the total number of atoms in each Amino Acid (AA).
-
     for residue in structure.get_residues():
-        output_dict = {}
-        #print residue
-        output_dict['residue_name'] = residue.resname
-        output_dict['residue_num'] = residue.get_full_id()[3][1]
-        output_dict['chain'] = residue.get_full_id()[2]
-        no_n  = True
-        no_c_a = True
-        no_c  = True
-        no_o  = True
-        no_c_b = True
-        no_sidechain = True
-        coord_ca = None
-        sidechain_coords = []  # A list containing the coordinates of all side chain atoms of the current residue. Will be used to calculate the COM of the side chain.
-        amino_acid_coords = []  # A list containing the coordinates of all atoms of the current Amino Acid. Will be used to calculate the COM of the Amino Acid.
-        for atom in structure.get_atoms():
-            # atom.name is equivalent to atom.get_id()
-            if atom.parent.id != residue.id:
-                continue
-            if atom.name == 'N':
-                no_n = False
-            elif atom.name == 'CA':
-                no_c_a = False
-                coord_ca = atom.get_coord()
-            elif atom.name == 'C':
-                no_c = False
-            elif atom.name == 'O':
-                no_o = False
-            elif atom.name == 'CB':
-                no_c_b = False
+        het_flag = residue.get_id()[0]
+        if het_flag[0:2] == 'H_' or het_flag[0] == 'W':
+            # Skip hetatoms and waters in PDB
+            continue
+        output_list.append(process_residue(residue, structure))
+    return output_list
 
-            if atom.name not in ['C','CA','O','N']:
-                no_sidechain = False
-                sidechain_coords.append(atom.get_coord())
+def main():
+    '''
+    Doc string
+    '''
+    parser = argparse.ArgumentParser(
+        description='Calculate WCN values for an input PDB.')
+    parser.add_argument('pdb', metavar='<PDB path>', type=str,
+                        help='input pdb file')
+    parser.add_argument('-o', metavar='<output prefix>', type=str,
+                        help='prefix for output files')
+    args = parser.parse_args()
+    pdb_name = os.path.splitext(os.path.basename(args.pdb))[0]
+    # Define output file names
+    if args.o is None:
+        # If no output prefix given, assign prefix using input filename
+        args.o = pdb_name
+    output_wcn = args.o + '.wcn.csv'
 
-            amino_acid_coords.append(atom.get_coord())
-        
-        warning_message = "Missing {} backbone atom in residue ({}, {}) in PDB {}."
+    pdb_parser = PDBParser()
+    structure = pdb_parser.get_structure(pdb_name.upper(), args.pdb)
+    output_list = collect_coordinates(structure)
+    output_list = calculate_wcn(output_list)
 
-        if no_n:
-            warnings.warn(warning_message.format('N',
-                                                 output_dict['residue_num'], 
-                                                 output_dict['residue_name'],
-                                                 pdb_name.upper()),
-                          RuntimeWarning)
-        if no_c_a:
-            raise RuntimeError('Missing CA backbone atom in residue (' + 
-                               str(output_dict['residue_num']) + ', ' +
-                               str(output_dict['residue_name']) +
-                               ') in PDB ' + pdb_name.upper() + '. Cannot' 
-                               ' calculate C-alpha WCN.')
-        if no_c:
-            warnings.warn(warning_message.format('C',
-                                                 output_dict['residue_num'], 
-                                                 output_dict['residue_name'],
-                                                 pdb_name.upper()),
-                          RuntimeWarning)
-        if no_o:
-            warnings.warn(warning_message.format('O',
-                                                 output_dict['residue_num'], 
-                                                 output_dict['residue_name'],
-                                                 pdb_name.upper()),
-                          RuntimeWarning)
-        if no_c_b:
-            warnings.warn(warning_message.format('CB',
-                                                 output_dict['residue_num'], 
-                                                 output_dict['residue_name'],
-                                                 pdb_name.upper()),
-                          RuntimeWarning)
-        if no_sidechain:
-            warnings.warn(warning_message.format('sidechain',
-                                                 output_dict['residue_num'], 
-                                                 output_dict['residue_name'],
-                                                 pdb_name.upper() + 
-                                                 '. Using CA instead.'),
-                          RuntimeWarning)
-            sidechain_coords.append(coord_ca)
-        else:
-            # Calculate side chain properties:
-            output_dict['sidechain_size'] = len(sidechain_coords)
-            output_dict['sidechain_center'] = sum(sidechain_coords)/output_dict['sidechain_size']
-
-    # Now calcualte the Contact numbers for differnt sets of coordinates and output the results :
-
-    wcn_sidechain = []
-    wcn_ca = []
-
-    for residue in output_list:
-
-        wcnCAi = 0.      # WCN for atom CA of the ith residue in the PDB file.
-        for other_residue in output_list:
-           if residue != other_residue:
-               wcnCAi += 1./( (residue['coord_ca'][0]-other_residue['coord_ca'][0])**2 + (residue['coord_ca'][1]-other_residue['coord_ca'][1])**2 + (residue['coord_ca'][2]-other_residue['coord_ca'][2])**2 )
-        wcn_ca.append(wcnCAi)
-
-
-        # Now write out (or append to) the ouput file
-        sum_out_file.write(residue['residue_name'] + ',' + 
-                           str(wcnCA[i])+'\n')
+    with open(output_wcn, 'w') as csvfile:
+        writer = csv.DictWriter(csvfile,
+                                fieldnames=['residue', 'chain', 'amino_acid',
+                                            'wcn_sc', 'wcn_ca'],
+                                extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(output_list)
 
 if __name__ == "__main__":
-   main(sys.argv)
-
+    main()
