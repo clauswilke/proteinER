@@ -40,19 +40,18 @@ def parse_dssp_line(line):
     '''
     Extract values from a single line of DSSP output and calculate RSA.
     '''
-    solvent_acc = int(line[35:39])  # record SA value for given AA
+    solvent_acc = line[35:39].strip()  # record SA value for given AA
     amino_acid = line[13].strip()  # retrieve amino acid
     residue = line[6:10].strip()
     chain = line[11].strip()
     if amino_acid.islower():
         # if the AA is a lowercase letter, then it's a cysteine
         amino_acid = "C"
-    if amino_acid in ['X', '!', '*']:
-        # Masked or missing amino acids are assigned an RSA of 0
-        rsa = 0
-    else:
+    if amino_acid in RES_MAX_ACC:
         max_acc = RES_MAX_ACC[amino_acid]  # Find max SA for residue
-        rsa = solvent_acc / max_acc # Normalize SA
+        rsa = float(solvent_acc) / max_acc # Normalize SA
+    else:
+        rsa = None
     return {'residue': residue,
             'amino_acid': amino_acid,
             'chain': chain,
@@ -69,8 +68,8 @@ def parse_dssp(raw_dssp_output):
     for line in lines[28:]:
         # Skip first 28 lines of header info
         output_line = parse_dssp_line(line)
-        if output_line['amino_acid'] not in ['*', '!']:
-            # Append amino acid data to list if it's not masked or missing
+        if output_line['rsa'] is not None:
+            # Skip lines with no RSA value
             output.append(output_line)
 
     return output
