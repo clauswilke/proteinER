@@ -1,18 +1,9 @@
-import sys
+import argparse
 
-def main(argv):
+def format(in_file, out_file):
 
-	if len(argv) != 3: # wrong number of arguments
-		print("""Usage:
-format_aln_id.py <fasta_file> <reformated_fasta_file>
-""")
-		sys.exit()
-
-	fasta_file=argv[1]
-	out_fasta_file=argv[2]
-	
-	f=open(fasta_file,"r")
-	out=open(out_fasta_file,"w")
+	f=open(in_file,"r")
+	out=open(out_file,"w")
 	for line in f:
 		if line.startswith(">"):
 			if "." in line:
@@ -23,6 +14,30 @@ format_aln_id.py <fasta_file> <reformated_fasta_file>
 		else:
 			out.write(line)
 			continue
+			
+def main():
+	'''
+	format sequence IDs in a FASTA file
+	'''
+	#creating a parser
+	parser = argparse.ArgumentParser(description='Reformat sequence IDs in FASTA files.')
+	#adding arguments 
+	parser.add_argument('-i', metavar='<raw_aln.fasta>', type=str,
+                    help='input alignment file')
+	parser.add_argument('-o', metavar='<reformatted_aln.fasta>', type=str,
+                    help='output alignment file with reformatted sequence IDs')
+
+	args = parser.parse_args()
+
+	#set up output file name if none is given
+	if args.o is None:
+		reformatted_fasta = 'reformatted_'+args.i
+	else:
+		reformatted_fasta = args.o
+		
+	raw_fasta=args.i
+	
+	format(raw_fasta,reformatted_fasta)
 
 if __name__ == "__main__":
-	main(sys.argv)
+    main()
