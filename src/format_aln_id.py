@@ -1,3 +1,12 @@
+#!/usr/bin/python
+
+'''
+This script finds "." and "|" is sequence IDs and converts these characters to "_". 
+This scripts works strictly with alignment files in FASTA format.  
+
+Author: Dariya K. Sydykova
+'''
+
 import argparse
 
 def format(in_file, out_file):
