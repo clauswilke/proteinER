@@ -12,12 +12,6 @@ import subprocess
 import argparse
 import csv
 
-# Three letter to one letter amino acid code conversion
-RESDICT = {'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU': 'E', 'PHE': 'F', \
-           'GLY': 'G', 'HIS': 'H', 'ILE': 'I', 'LYS': 'K', 'LEU': 'L', \
-           'MET': 'M', 'ASN': 'N', 'PRO': 'P', 'GLN': 'Q', 'ARG': 'R', \
-           'SER': 'S', 'THR': 'T', 'VAL': 'V', 'TRP': 'W', 'TYR': 'Y'}
-
 # ASA normalization constants were taken from:
 # M. Z. Tien, A. G. Meyer, D. K. Sydykova, S. J. Spielman, C. O. Wilke (2013).
 # Maximum allowed solvent accessibilities of residues in proteins. PLOS ONE

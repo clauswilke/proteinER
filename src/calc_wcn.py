@@ -12,13 +12,9 @@ import os
 import csv
 import warnings
 import argparse
+from Bio.Data import SCOPData
 from Bio.PDB import PDBParser
-
-# Three letter to one letter amino acid code conversion
-RESDICT = {'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU': 'E', 'PHE': 'F', \
-           'GLY': 'G', 'HIS': 'H', 'ILE': 'I', 'LYS': 'K', 'LEU': 'L', \
-           'MET': 'M', 'ASN': 'N', 'PRO': 'P', 'GLN': 'Q', 'ARG': 'R', \
-           'SER': 'S', 'THR': 'T', 'VAL': 'V', 'TRP': 'W', 'TYR': 'Y'}
+from Bio.PDB import is_aa
 
 def inv_sq_distance(coord1, coord2):
     '''
@@ -56,7 +52,7 @@ def process_residue(residue):
     output_dict = {}
     atoms_seen = []
     # Convert three letter amino acid to one letter
-    output_dict['amino_acid'] = RESDICT[residue.resname]
+    output_dict['amino_acid'] = SCOPData.protein_letters_3to1[residue.resname]
     # Grab residue number AND any insertion site labeling (11A, 11B, etc.)
     output_dict['residue'] = str(residue.get_id()[1]) + \
                              residue.get_id()[2].strip()
@@ -107,11 +103,8 @@ def collect_coordinates(structure):
     '''
     output_list = []
     for residue in structure.get_residues():
-        het_flag = residue.get_id()[0]
-        if het_flag[0:2] == 'H_' or het_flag[0] == 'W':
-            # Skip hetatoms and waters in PDB
-            continue
-        output_list.append(process_residue(residue))
+        if is_aa(residue):
+            output_list.append(process_residue(residue))
     return output_list
 
 def main():
