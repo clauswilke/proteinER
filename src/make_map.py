@@ -16,19 +16,17 @@ import warnings
 import argparse
 import tempfile
 import subprocess
+
+from Bio import SeqIO, AlignIO
 from Bio.Data import SCOPData
-from Bio.PDB import PDBParser
-from Bio.PDB import is_aa
-from Bio import SeqIO
+from Bio.PDB import PDBParser, is_aa
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from Bio import AlignIO
-import StringIO
 
-def get_aa_seq(structure):
+def get_aa_seq(chain):
     aa_list = []
     residue_numbers = []
-    for residue in structure.get_residues():
+    for residue in chain:
         if is_aa(residue):
             aa_list.append(SCOPData.protein_letters_3to1[residue.resname])
             residue_numbers.append(str(residue.get_id()[1]) + \
@@ -41,7 +39,7 @@ def run_mafft(fasta_seq, pdb_seq):
     with tempfile.NamedTemporaryFile() as temp_fasta:
         with tempfile.NamedTemporaryFile() as temp_aln:
             SeqIO.write(sequences, temp_fasta.name, "fasta")
-            subprocess.call(['linsi', temp_fasta.name], stdout = temp_aln)
+            subprocess.call(['mafft-linsi', temp_fasta.name], stdout=temp_aln)
             alignment = AlignIO.read(temp_aln.name, 'fasta')
     return alignment
 
@@ -69,39 +67,48 @@ def main():
     pdb_parser = PDBParser()
     structure = pdb_parser.get_structure(pdb_name.upper(), args.pdb)
 
-    pdb_record, residue_numbers = get_aa_seq(structure)
+    pdb_record, residue_numbers = get_aa_seq(structure[0]['A'])
 
-    fasta_seq = SeqIO.read('./structural_features/HRH1.fasta', 'fasta')
+    fasta_seq = SeqIO.read(args.fasta, 'fasta')
     fasta_record = SeqRecord(fasta_seq.seq, id='fasta_seq', description='')
     alignment = run_mafft(fasta_record, pdb_record)
 
     align_list = [list(rec) for rec in alignment]
     fasta_aln = align_list[0]
     pdb_aln = align_list[1]
-    print(len(residue_numbers))
-    print(len(pdb_aln))
+
     pdb_counter = 0
     fasta_position = 1
+    matches = 0
     out_list = []
     for fasta_aa, pdb_aa in zip(fasta_aln, pdb_aln):
         out_dict = {}
-        out_dict['fasta_aa'] = fasta_aa
-        out_dict['pdb_aa'] = pdb_aa
         if pdb_aa != '-':
             out_dict['pdb_position'] = residue_numbers[pdb_counter]
+            out_dict['pdb_aa'] = pdb_aa
             pdb_counter += 1
         else:
             out_dict['pdb_position'] = ''
+            out_dict['pdb_aa'] = ''
         if fasta_aa != '-':
             out_dict['fasta_position'] = fasta_position
+            out_dict['fasta_aa'] = fasta_aa
             fasta_position += 1
         else:
             out_dict['fasta_position'] = ''
+            out_dict['fasta_aa'] = ''
+        if fasta_aa != '-' and pdb_aa != '-' and fasta_aa != pdb_aa:
+            out_dict['mismatch'] = 1
+        else:
+            out_dict['mismatch'] = 0
+            matches += 1
         out_list.append(out_dict)
     
+    print(matches)
+
     with open(output_map, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
-                                fieldnames=['fasta_aa', 'pdb_aa', 'pdb_position', 'fasta_position'],
+                                fieldnames=['fasta_aa', 'pdb_aa', 'pdb_position', 'fasta_position', 'mismatch'],
                                 extrasaction="ignore")
         writer.writeheader()
         writer.writerows(out_list)
