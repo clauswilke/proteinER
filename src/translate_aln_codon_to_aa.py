@@ -28,7 +28,7 @@ def translate(nuc_aln_file,aa_aln_file):
 
 def main():
 	'''
-	find conserved sites in FASTA file and assign dN/dS of 0 to those sites.
+	Translate nucleotide sequences to amino acid sequences.
 	'''
 	#creating a parser
 	parser = argparse.ArgumentParser(description='Translate nucleotide sequences into amino acid sequences')
