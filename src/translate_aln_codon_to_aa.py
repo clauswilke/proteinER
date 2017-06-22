@@ -33,7 +33,7 @@ def main():
 	#creating a parser
 	parser = argparse.ArgumentParser(description='Translate nucleotide sequences into amino acid sequences')
 	#adding arguments 
-	parser.add_argument('-i', metavar='<nuc_aln.fasta>', type=str,
+	parser.add_argument('-n', metavar='<nuc_aln.fasta>', type=str,
                     help='input nucleotide alignment file')
 	parser.add_argument('-o', metavar='<aa_aln.fasta>', type=str,
                     help='output amino acid alignment file')
@@ -46,7 +46,7 @@ def main():
 	else:
 		aa_aln_file = args.o
 		
-	nuc_aln_file = args.i
+	nuc_aln_file = args.n
 
 	translate(nuc_aln_file,aa_aln_file)
 
