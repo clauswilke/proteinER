@@ -1,0 +1,71 @@
+
+
+This is RAxML version 8.2.9 released by Alexandros Stamatakis on July 20 2016.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 345 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 5.16%
+
+RAxML rapid hill-climbing mode
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+Executing 1 inferences on the original alignment using 1 distinct randomized MP trees
+
+All free model parameters will be estimated by RAxML
+ML estimate of 25 per site rate categories
+
+Likelihood of final tree will be evaluated and optimized under GAMMA
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 345
+Name: No Name Provided
+DataType: AA
+Substitution Matrix: LG
+Using fixed base frequencies
+
+
+
+
+RAxML was called as follows:
+
+../../standard-RAxML/raxmlHPC-SSE3 -s HRH1_aligned_aa.fasta -n HRH1_tree.tre -m PROTCATLG -p 12345 
+
+
+Partition: 0 with name: No Name Provided
+Base frequencies: 0.079 0.056 0.042 0.053 0.013 0.041 0.072 0.057 0.022 0.062 0.099 0.065 0.023 0.042 0.044 0.061 0.053 0.012 0.034 0.069 
+
+Inference[0]: Time 19.553401 CAT-based likelihood -6760.696217, best rearrangement setting 5
+alpha[0]: 1.000000 
+
+
+Conducting final model optimizations on all 1 trees under GAMMA-based models ....
+
+Inference[0] final GAMMA-based Likelihood: -7343.612620 tree written to file /Users/dariyasydykova/Desktop/projects/proteinER/measuring_dNdS/RAxML_result.HRH1_tree.tre
+
+
+Starting final GAMMA-based thorough Optimization on tree 0 likelihood -7343.612620 .... 
+
+Final GAMMA-based Score of best tree -7343.114828
+
+Program execution info written to /Users/dariyasydykova/Desktop/projects/proteinER/measuring_dNdS/RAxML_info.HRH1_tree.tre
+Best-scoring ML tree written to: /Users/dariyasydykova/Desktop/projects/proteinER/measuring_dNdS/RAxML_bestTree.HRH1_tree.tre
+
+Overall execution time: 30.390027 secs or 0.008442 hours or 0.000352 days
+
