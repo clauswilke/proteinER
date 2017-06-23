@@ -39,8 +39,8 @@ def get_aa_seq(chain):
 
 def run_mafft(fasta_seq, pdb_seq):
     '''
-    Align two Bio.SeqRecord sequences and return an a biopython alignment
-    object.
+    Align two Bio.SeqRecord sequences with mafft and return an a biopython 
+    alignment object.
     '''
     sequences = [fasta_seq, pdb_seq]
     with tempfile.NamedTemporaryFile() as temp_fasta:
