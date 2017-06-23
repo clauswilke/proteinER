@@ -1,2 +1,5 @@
 # macOS
 .DS_store
+messages.log
+errors.log
+nuc.fit
