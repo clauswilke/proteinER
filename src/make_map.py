@@ -79,7 +79,7 @@ def main():
 
     pdb_counter = 0
     fasta_position = 1
-    matches = 0
+    matches_no_gaps = 0
     out_list = []
     for fasta_aa, pdb_aa in zip(fasta_aln, pdb_aln):
         out_dict = {}
@@ -101,10 +101,11 @@ def main():
             out_dict['mismatch'] = 1
         else:
             out_dict['mismatch'] = 0
-            matches += 1
+        if fasta_aa != '-' and pdb_aa != '-' and fasta_aa == pdb_aa:
+            matches_no_gaps += 1
         out_list.append(out_dict)
     
-    print(matches)
+    print(matches_no_gaps)
 
     with open(output_map, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
