@@ -76,7 +76,7 @@ def load_pdb_chain(name, pdb_file, model_name, chain_name):
                            'file and specify chain for map.')
     return chain
 
-def make_map(alignment, residue_numbers):
+def make_map(alignment, residue_numbers, chain_name):
     '''
     Make a amino acid to PDB residue number map using an alignment and a list of
     PDB residue numbers. Return a list of dictionaries designed to be converted
@@ -111,6 +111,7 @@ def make_map(alignment, residue_numbers):
             out_dict['mismatch'] = 1
         else:
             out_dict['mismatch'] = 0
+        out_dict['chain'] = chain_name
         out_list.append(out_dict)
     return out_list
 
@@ -154,11 +155,11 @@ def main():
     # Align PDB and FASTA sequence
     alignment = run_mafft(fasta_record, pdb_record)
     # Generate map
-    output_list = make_map(alignment, residue_numbers)
+    output_list = make_map(alignment, residue_numbers, args.c)
     # Write map to CSV
     with open(output_map, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
-                                fieldnames=['fasta_aa', 'pdb_aa',
+                                fieldnames=['fasta_aa', 'pdb_aa', 'chain',
                                             'pdb_position', 'fasta_position',
                                             'mismatch'],
                                 extrasaction="ignore")
