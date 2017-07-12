@@ -2,7 +2,7 @@
 
 '''
 This script parses an input PDB file and returns relative solvent accessibility
-values (RSA) and raw DSSP output.
+values (RSA), secondary structure information, and raw DSSP output.
 
 Author: Benjamin R. Jack
 '''
@@ -38,6 +38,7 @@ def parse_dssp_line(line):
     amino_acid = line[13].strip()  # retrieve amino acid
     residue = line[6:10].strip()
     chain = line[11].strip()
+    secondary_structure = line[16].strip() # secondary structure
     if amino_acid.islower():
         # if the AA is a lowercase letter, then it's a cysteine
         amino_acid = "C"
@@ -49,7 +50,8 @@ def parse_dssp_line(line):
     return {'residue': residue,
             'amino_acid': amino_acid,
             'chain': chain,
-            'rsa': rsa}
+            'rsa': rsa,
+            'structure': secondary_structure}
 
 def parse_dssp(raw_dssp_output):
     '''
@@ -93,6 +95,7 @@ def main():
         output_dict = parse_dssp(asa_file)
         with open(output_rsa, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=['residue', 'chain',
+                                                         'structure',
                                                          'amino_acid', 'rsa'])
             writer.writeheader()
             writer.writerows(output_dict)
