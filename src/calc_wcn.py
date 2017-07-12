@@ -12,6 +12,7 @@ import os
 import csv
 import warnings
 import argparse
+import textwrap
 from Bio.Data import SCOPData
 from Bio.PDB import PDBParser
 from Bio.PDB import is_aa
@@ -113,7 +114,25 @@ def main():
     values.
     '''
     parser = argparse.ArgumentParser(
-        description='Calculate WCN values for an input PDB.')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='Calculate WCN values for an input PDB.',
+        epilog=textwrap.dedent('''\
+            This script produces a CSV with the following columns:
+            
+            Column name   Description
+            ===================================================================
+            residue       Residue number, extracted from the input PDB file.
+
+            chain         PDB chain.
+            
+            amino_acid    Single-letter amino acid.
+            
+            wcn_sc        Weighted contact number calculated with respect to 
+                          the amino acid side-chain center-of-mass.
+            
+            wcn_ca        Weighted contact number calculated with respect to the
+                          amino acid alpha carbon.
+            ''')        )
     parser.add_argument('pdb', metavar='<PDB path>', type=str,
                         help='input pdb file')
     parser.add_argument('-o', metavar='<output prefix>', type=str,

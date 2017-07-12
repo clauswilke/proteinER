@@ -88,7 +88,9 @@ def main():
             chain         PDB chain.
 
             structure     A letter indicating the secondary structure assigned 
-                          to this residue. Values are:
+                          to this residue. This column may be empty of no 
+                          secondary structure can be assigned. Non-empty values 
+                          are:
 
                           Code      Description
                           -----------------------------------------------------
