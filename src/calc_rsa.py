@@ -11,6 +11,7 @@ import os
 import subprocess
 import argparse
 import csv
+import textwrap
 
 # ASA normalization constants were taken from:
 # M. Z. Tien, A. G. Meyer, D. K. Sydykova, S. J. Spielman, C. O. Wilke (2013).
@@ -75,7 +76,35 @@ def main():
     Run mkdssp on input PDB and parse output into CSV with RSA values.
     '''
     parser = argparse.ArgumentParser(
-        description='Calculate RSA values for an input PDB.')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='Calculate RSA and secondary structure values for an input PDB.',
+        epilog=textwrap.dedent('''\
+            This script produces a CSV with the following columns:
+            
+            Column name   Description
+            ===================================================================
+            residue       Residue number, extracted from the input PDB file.
+
+            chain         PDB chain.
+
+            structure     A letter indicating the secondary structure assigned 
+                          to this residue. Values are:
+
+                          Code      Description
+                          -----------------------------------------------------
+                          H         Alpha Helix
+                          B         Beta Bridge
+                          E         Strand
+                          G         Helix-3
+                          I         Helix-5
+                          T         Turn
+                          S         Bend 
+            
+            amino_acid    Single-letter amino acid.
+            
+            rsa           Relative solvent accessibility, normalized to the     
+                          maximum possible solvent accessibility.
+            '''))
     parser.add_argument('pdb', metavar='<PDB path>', type=str,
                         help='input pdb file')
     parser.add_argument('-o', metavar='<output prefix>', type=str,
