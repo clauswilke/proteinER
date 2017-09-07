@@ -1,7 +1,7 @@
 HYPHYDIR = "./batchfiles/";
 WDIR="./../../measuring_dNdS/";
 datafile="HRH1_aligned_codon.fasta";
-treefile="RAxML_bestTree.HRH1_tree.tre";
+treefile="RAxML_bestTree.HRH1_tree";
 nucfitfile="nuc.fit";
 outfile="HRH1_rates.csv";
 
