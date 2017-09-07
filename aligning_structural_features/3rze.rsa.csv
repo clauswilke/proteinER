@@ -1,4 +1,4 @@
-residue,chain,structure,amino_acid,rsa
+pdb_position,chain,structure,pdb_aa,rsa
 28,A,,M,0.9241071428571429
 29,A,G,P,0.6729559748427673
 30,A,G,L,0.5223880597014925

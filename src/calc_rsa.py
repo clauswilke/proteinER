@@ -48,8 +48,8 @@ def parse_dssp_line(line):
         rsa = float(solvent_acc) / max_acc # Normalize SA
     else:
         rsa = None
-    return {'residue': residue,
-            'amino_acid': amino_acid,
+    return {'pdb_position': residue,
+            'pdb_aa': amino_acid,
             'chain': chain,
             'rsa': rsa,
             'structure': secondary_structure}
@@ -83,7 +83,7 @@ def main():
             
             Column name   Description
             ===================================================================
-            residue       Residue number, extracted from the input PDB file.
+            pdb_position  Residue number, extracted from the input PDB file.
 
             chain         PDB chain.
 
@@ -102,7 +102,7 @@ def main():
                           T         Turn
                           S         Bend 
             
-            amino_acid    Single-letter amino acid.
+            pdb_aa        Single-letter amino acid.
             
             rsa           Relative solvent accessibility, normalized to the     
                           maximum possible solvent accessibility.
@@ -125,9 +125,9 @@ def main():
         # DSSP succeeded, write output to CSV
         output_dict = parse_dssp(asa_file)
         with open(output_rsa, 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=['residue', 'chain',
-                                                         'structure',
-                                                         'amino_acid', 'rsa'])
+            writer = csv.DictWriter(csvfile, fieldnames=['pdb_position', 
+                                                         'chain', 'structure',
+                                                         'pdb_aa', 'rsa'])
             writer.writeheader()
             writer.writerows(output_dict)
 
