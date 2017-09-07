@@ -53,10 +53,10 @@ def process_residue(residue):
     output_dict = {}
     atoms_seen = []
     # Convert three letter amino acid to one letter
-    output_dict['amino_acid'] = SCOPData.protein_letters_3to1[residue.resname]
+    output_dict['pdb_aa'] = SCOPData.protein_letters_3to1[residue.resname]
     # Grab residue number AND any insertion site labeling (11A, 11B, etc.)
-    output_dict['residue'] = str(residue.get_id()[1]) + \
-                             residue.get_id()[2].strip()
+    output_dict['pdb_position'] = str(residue.get_id()[1]) + \
+                                  residue.get_id()[2].strip()
     output_dict['chain'] = residue.get_full_id()[2]
     # Coordinates of all sidechain atoms in this residue
     sidechain_coords = []
@@ -70,8 +70,8 @@ def process_residue(residue):
             sidechain_coords.append(atom.get_coord())
 
     warning_message = "Missing {} in residue (" + \
-                        str(output_dict['residue']) + ", " + \
-                        str(output_dict['amino_acid']) + ")"
+                        str(output_dict['pdb_position']) + ", " + \
+                        str(output_dict['pdb_aa']) + ")"
 
     for mainchain_atom in ['N', 'C', 'O']:
         # Warn about any missing mainchain atoms
@@ -85,7 +85,7 @@ def process_residue(residue):
 
     if len(sidechain_coords) == 0:
         # Warn about missing sidechain for amino acids other than glycine
-        if output_dict['amino_acid'] != 'G':
+        if output_dict['pdb_aa'] != 'G':
             warnings.warn(warning_message.format('sidechain') +
                           '. Using CA instead.', RuntimeWarning)
         sidechain_coords.append(output_dict['coord_ca'])
@@ -121,11 +121,11 @@ def main():
             
             Column name   Description
             ===================================================================
-            residue       Residue number, extracted from the input PDB file.
+            pdb_position  Residue number, extracted from the input PDB file.
 
             chain         PDB chain.
             
-            amino_acid    Single-letter amino acid.
+            pdb_aa        Single-letter amino acid.
             
             wcn_sc        Weighted contact number calculated with respect to 
                           the amino acid side-chain center-of-mass.
@@ -154,8 +154,8 @@ def main():
     # Write output to a CSV
     with open(output_wcn, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
-                                fieldnames=['residue', 'chain', 'amino_acid',
-                                            'wcn_sc', 'wcn_ca'],
+                                fieldnames=['pdb_position', 'chain', 
+                                            'pdb_aa', 'wcn_sc', 'wcn_ca'],
                                 extrasaction="ignore")
         writer.writeheader()
         writer.writerows(output_list)

@@ -1,4 +1,4 @@
-==== Secondary Structure Definition by the program DSSP, CMBI version by M.L. Hekkelman/2010-10-21 ==== DATE=2017-09-05        .
+==== Secondary Structure Definition by the program DSSP, CMBI version by M.L. Hekkelman/2010-10-21 ==== DATE=2017-09-07        .
 REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637                                                              .
 HEADER    HYDROLASE                               11-MAY-11   XXXX                                                             .
 COMPND    Histamine H1 receptor/Lysozyme chimera                                                                               .
