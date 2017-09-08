@@ -5,19 +5,18 @@ This script extracts dN/dS values from HyPhy output file for the first sequence 
 
 Author: Dariya K. Sydykova
 '''
-
-import argparse
-from Bio import AlignIO
+import argparse, sys, os
+from Bio import SeqIO
 
 def extract_dNdS(aln_file, rates_file, out_rates):	
-	aln = AlignIO.read(aln_file, "fasta") #read fasta file
-	first_seq=aln[0].seq #get the first sequence in the alignment
+	records = list(SeqIO.parse(aln_file, "fasta")) #read fasta file
+	first_seq=records[0].seq #get the first sequence in the alignment and turn it into a Seq object
 	
 	r=open(rates_file,"r")
 	out=open(out_rates,"w")
 	
 	site=0 #set up a counter to parse the alignment
-	pos=1 #set up a counter for sequence position
+	pos=0 #set up a counter for sequence position
 	for line in r:
 		if line.startswith("dN/dS"):
 			out.write('fasta_position\tfasta_aa'+line) #write a new heading
@@ -25,11 +24,17 @@ def extract_dNdS(aln_file, rates_file, out_rates):
 		
 		if first_seq[site]!='-': #if the site is not a gap, write the fasta position, amino acid, and dN/dS value to the output file
 			aa=first_seq[site]
+			pos+=1
 			new_line=str(pos)+','+aa+','+line
 			out.write(new_line)
-			pos+=1
 			
-		site+=1		
+		site+=1	
+	
+	total_sites=len(first_seq.ungap('-'))
+	if total_sites!=pos:
+		print('The length of the first sequence does not match the total output positions')
+		os.remove(out_rates)
+		sys.exit()
 
 def main():
 	'''
