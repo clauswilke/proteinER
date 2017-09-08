@@ -45,7 +45,6 @@ def main():
 	args = parser.parse_args()
 
 	#set up output file name if none is given
-	#set up output file name if none is given
 	if args.o is None:
 		out_rates = "processed_"+args.r
 	else:
