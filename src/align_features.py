@@ -7,28 +7,33 @@ Author: Benjamin R. Jack
 '''
 
 import os
-import csv
-import warnings
-import pandas as pd
 import argparse
-import textwrap
+import pandas as pd
+
 
 def import_rates(rate_files, seq_count):
+    '''
+    Import rate files. Each file must contain a `fasta_position` column. The 
+    number of rows must match the value of `seq_count`. 
+    '''
     rates = []
     for rate_file in rate_files:
         rates.append(pd.read_csv(rate_file))
         if 'fasta_position' not in rates[-1].keys():
-            pass
-            # raise KeyError("Column `fasta_position` is missing from rate file '{}'. Without this column, features and rates cannot be aligned.".format(rate_file))
+            raise KeyError("Column `fasta_position` is missing from rate file '{}'. Without this column, features and rates cannot be aligned.".format(rate_file))
         rate_count = len(rates[-1].index)
         if rate_count != seq_count:
-            pass
-            # raise RuntimeError(
-            #     "The number of positions in the sequence map do not match the number of positions in rate file '{}'.".format(rate_file))
+            raise RuntimeError(
+                 "The number of positions in the sequence map do not match the number of positions in rate file '{}'.".format(rate_file))
     
     return rates
 
 def import_features(feature_files, seq_count):
+    '''
+    Import feature files. Each file must contain the columns `pdb_position`, 
+    `pdb_aa`, and `chain`. The number of rows must match the value of 
+    `seq_count`.
+    '''
     features = []
     for feature_file in feature_files:
         features.append(pd.read_csv(feature_file))
@@ -44,10 +49,24 @@ def import_features(feature_files, seq_count):
     return features
 
 def align_rates(seq_map, rates):
+    '''
+    Join a list of rate dataframes to a mapping dataframe by columns `fasta_position` and `fasta_aa`.
+    '''
+    rate_indices = ['fasta_position', 'fasta_aa']
     for rate in rates:
-        rate['fasta_position'] = rate.index + 1
-        seq_map = seq_map.set_index('fasta_position').join(rate.set_index('fasta_position')).reset_index()
+        seq_map = seq_map.set_index(rate_indices).join(rate.set_index(rate_indices)).reset_index()
     
+    return seq_map
+
+def align_features(seq_map, features):
+    '''
+    Join a list of structural feature dataframes to a mapping dataframe by columns `pdb_position`, `pdb_aa`, and `chain`.
+    '''
+    pdb_indices = ['pdb_position', 'chain', 'pdb_aa']
+    for feature in features:
+        seq_map = seq_map.set_index(pdb_indices).join(
+            feature.set_index(pdb_indices)).reset_index()
+
     return seq_map
 
 def main():
@@ -88,12 +107,10 @@ def main():
     
     # Import features
     features = import_features(args.f, seq_map['pdb_position'].count())
+    # Join features to map
+    seq_map = align_features(seq_map, features) 
     
-    pdb_indices = ['pdb_position', 'chain', 'pdb_aa']
-
-    for feature in features:
-        seq_map = seq_map.set_index(pdb_indices).join(feature.set_index(pdb_indices)).reset_index()
-    
+    # Write aligned features and rates to CSV
     seq_map.to_csv(output_file, index=False)
 
 if __name__ == "__main__":
