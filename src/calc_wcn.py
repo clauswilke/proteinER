@@ -3,7 +3,7 @@
 '''
 This script parses an input PDB file and returns weighted contact number (WCN)
 values, calculated with respect to the alpha-carbon (wcn_ca) and the sidechain
-center-of-mass (wcn_sc).
+geometric center (wcn_sc).
 
 Author: Benjamin R. Jack
 '''

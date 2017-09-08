@@ -11,12 +11,12 @@ codon_rsa <- ggplot(my_data, aes(x = rsa, y = `dN/dS`)) +
   geom_point(alpha = 0.5) +
   xlab('RSA')
 
-aa_wcn <- ggplot(my_data, aes(x = wcn_sc, y = `dN/dS`)) + 
+aa_wcn <- ggplot(my_data, aes(x = wcn_sc, y = `r4s_rate`)) + 
   geom_point(alpha = 0.5) +
-  xlab('side-chain WCN')
-aa_rsa <- ggplot(my_data, aes(x = rsa, y = `dN/dS`)) + 
+  labs(x = 'side-chain WCN', y = 'rate4site score')
+aa_rsa <- ggplot(my_data, aes(x = rsa, y = `r4s_rate`)) + 
   geom_point(alpha = 0.5) +
-  xlab('RSA')
+  labs(x = 'RSA', y = 'rate4site score')
 
 all_plots <- plot_grid(codon_wcn, codon_rsa, aa_wcn, aa_rsa, nrow = 2, ncol = 2, labels = 'auto')
 save_plot("../figures/scatterplots.pdf", all_plots, base_width = 8, base_height = 7)
