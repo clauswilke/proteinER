@@ -19,7 +19,7 @@ def extract_dNdS(aln_file, rates_file, out_rates):
 	pos=0 #set up a counter for sequence position
 	for line in r:
 		if line.startswith("dN/dS"):
-			out.write('fasta_position\tfasta_aa'+line) #write a new heading
+			out.write('fasta_position,fasta_aa,'+line) #write a new heading
 			continue
 		
 		if first_seq[site]!='-': #if the site is not a gap, write the fasta position, amino acid, and dN/dS value to the output file
