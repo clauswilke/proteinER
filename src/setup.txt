@@ -1,2 +1,0 @@
-INFILE = ../measuring_aa_rates/HRH1_aln_tree.txt
-OUTFILE = ../measuring_aa_rates/HRH1_rates.csv
