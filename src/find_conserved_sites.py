@@ -24,26 +24,34 @@ def find_unchanged_sites(aln, rates_file, out_file):
 		#checks if the list of amino acids at site i is identical to 
 		#the first amino acid in a list repeated the number of times the list is
 		if col == len(col) * col[0]:
-			conserved_sites_lst.append(True)
+			conserved_sites_lst.append(i+1)
 		else:
-			conserved_sites_lst.append(False)
-		
-	site=0
+			continue
+	
+	print(conserved_sites_lst)	
 	for line in r:
-		if line.startswith("dN/dS"):
-			out.write(line)
+		if line.startswith("Site"):
+			token=line.split(",")
+			new_header = token[0]+",dN/dS,"+",".join(token[4:])
+			out.write(new_header)
 			continue
 		
-		conserved = conserved_sites_lst[site]
 		token=line.split(",")
+		site=token[0]
+		dS=float(token[1])
+		dN=float(token[2])
 		
-		if conserved:
-			new_line = str(0)+","+",".join(token[1:])
+		if dS==0:
+			dN_dS=0
 		else:
-			new_line = line
+			dN_dS = dN/dS
+		
+		if site in conserved_sites_lst:
+			new_line = site+",0,"+",".join(token[4:])
+		else:
+			new_line = site+","+str(dN_dS)+","+",".join(token[4:])
 		
 		out.write(new_line)
-		site+=1
 
 def main():
 	'''
