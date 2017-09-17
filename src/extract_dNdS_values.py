@@ -15,9 +15,8 @@ def extract_dNdS(aln_file, rates_file, out_rates):
 	r=open(rates_file,"r") #read the rates file
 	out=open(out_rates,"w") #open output file
 	
+	fasta_pos=0
 	for line in r:
-		print(line)
-		print(len(first_seq))
 		token=line.split(",")
 		if line.startswith("Site"):
 			out.write('fasta_position,fasta_aa,'+",".join(token[1:])) #write a new heading
@@ -26,12 +25,13 @@ def extract_dNdS(aln_file, rates_file, out_rates):
 		site=int(token[0])
 		if first_seq[site-1]!='-': #if the site is not a gap, write the fasta position, amino acid, and dN/dS value to the output file
 			aa=first_seq[site-1]
-			
-			new_line=str(site)+','+aa+','+",".join(token[1:])
+			fasta_pos+=1
+
+			new_line=str(fasta_pos)+','+aa+','+",".join(token[1:])
 			out.write(new_line)
 	
-	total_sites=len(first_seq)
-	if total_sites!=site:
+	total_sites=len(first_seq.ungap("-"))
+	if total_sites!=fasta_pos:
 		print('The length of the first sequence does not match the total output positions')
 		os.remove(out_rates)
 		sys.exit()
