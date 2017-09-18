@@ -28,7 +28,6 @@ def find_unchanged_sites(aln, rates_file, out_file):
 		else:
 			continue
 	
-	print(conserved_sites_lst)	
 	for line in r:
 		if line.startswith("Site"):
 			token=line.split(",")
@@ -43,8 +42,11 @@ def find_unchanged_sites(aln, rates_file, out_file):
 		
 		if dS==0:
 			dN_dS=0
+		elif dS==1:
+			dN_dS = dN
 		else:
-			dN_dS = dN/dS
+			print("dS is not equal 1")
+			sys.exit()
 		
 		if site in conserved_sites_lst:
 			new_line = site+",0,"+",".join(token[4:])
