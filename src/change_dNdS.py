@@ -9,7 +9,7 @@ Author: Dariya K. Sydykova
 import argparse
 from Bio import AlignIO
 
-def find_unchanged_sites(aln, rates_file, out_file):
+def change_dNdS(aln, rates_file, out_file):
 
 	r=open(rates_file,"r")
 	out=open(out_file,"w")
@@ -57,10 +57,10 @@ def find_unchanged_sites(aln, rates_file, out_file):
 
 def main():
 	'''
-	find conserved sites in FASTA file and assign dN/dS of 0 to those sites.
+	Find conserved sites and assign them dN/dS=0
 	'''
 	#creating a parser
-	parser = argparse.ArgumentParser(description='Assign dN/dS of 0 to conserved sites.')
+	parser = argparse.ArgumentParser(description='Find conserved sites and assign them dN/dS=0')
 	#adding arguments 
 	parser.add_argument('-a', metavar='<aa_aln.fasta>', type=str, help='input amino acid alignment file')
 	parser.add_argument('-r', metavar='<rates.csv>', type=str, help='HyPhy FEL1 file')
@@ -78,7 +78,7 @@ def main():
 	rates_file=args.r
 
 	aln = AlignIO.read(aln_file, "fasta") 
-	find_unchanged_sites(aln, rates_file, out_rates)
+	change_dNdS(aln, rates_file, out_rates)
 
 if __name__ == "__main__":
 	main()

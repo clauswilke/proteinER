@@ -1,4 +1,4 @@
-RequireVersion(2.3.3);
+RequireVersion("2.3.3");
 
 /* Execute a site-wise dN/dS inference using FEL in HyPhy version >= 2.3. 
    
