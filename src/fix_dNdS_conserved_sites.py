@@ -9,7 +9,7 @@ Author: Dariya K. Sydykova
 import argparse
 from Bio import AlignIO
 
-def change_dNdS(aln, rates_file, out_file):
+def fix_dNdS(aln, rates_file, out_file):
 
 	r=open(rates_file,"r")
 	out=open(out_file,"w")
@@ -78,7 +78,7 @@ def main():
 	rates_file=args.r
 
 	aln = AlignIO.read(aln_file, "fasta") 
-	change_dNdS(aln, rates_file, out_rates)
+	fix_dNdS(aln, rates_file, out_rates)
 
 if __name__ == "__main__":
 	main()
