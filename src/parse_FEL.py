@@ -5,7 +5,9 @@ Parse HyPhy output file =  FEL JSON into a CSV, **assuming a single partition**
 
 Author: Stephanie J. Spielman, Dariya K. Sydykova
 '''
-import json, argparse
+import json
+import argparse
+import textwrap
 
 def parse_json(fel_json_file, fel_csv_file):
 
@@ -31,7 +33,34 @@ def main():
 	'''
 	
 	#creating a parser
-	parser = argparse.ArgumentParser(description='Parse FEL json file to write csv file with site-wise dN/dS.')
+	parser = argparse.ArgumentParser(
+	formatter_class=argparse.RawDescriptionHelpFormatter,
+			description='Parse FEL json file to write csv file with site-wise dN/dS.',
+	        epilog=textwrap.dedent('''\
+            This script produces a CSV with the following columns: 
+			(Descriptions are directly borrowed from HyPhy json file)
+			
+            Column name           Description
+            ===================================================================
+            Site                  Site number, extracted from the alignment 
+                                  FASTA file
+            
+            alpha                 Synonymous substitution rate at a site
+            
+            beta                  Non-synonymous substitution rate at a site
+            
+            alpha=beta            The rate estimate under the neutral model
+
+            LRT                   Likelihood ration test statistic for 
+                                  beta = alpha, versus beta does not equal alpha
+                       
+            p-value               Likelihood ration test statistic for 
+                                  beta = alpha, versus beta does not equal alpha 
+            
+            Total_branch_length   The total length of branches contributing 
+                                  to inference at this site, and used to 
+                                  scale dN-dS
+            '''))
 	#adding arguments 
 	parser.add_argument('-j', metavar='<site-rates.json>', type=str, help='input FEL json file')
 	parser.add_argument('-r', metavar='<rates.csv>', type=str, help='output csv file with site-wise rates')

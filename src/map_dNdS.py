@@ -5,7 +5,10 @@ This script extracts dN/dS values from HyPhy output file for the first sequence 
 
 Author: Dariya K. Sydykova
 '''
-import argparse, sys, os
+import argparse
+import sys
+import os
+import textwrap
 from Bio import SeqIO
 
 def extract_dNdS(aln_file, rates_file, out_rates):	
@@ -41,17 +44,42 @@ def main():
 	Extract dN/dS values from HyPhy output for non-gap sites
 	'''
 	#creating a parser
-	parser = argparse.ArgumentParser(description='Assign dN/dS of 0 to conserved sites.')
+	parser = argparse.ArgumentParser(
+		    formatter_class=argparse.RawDescriptionHelpFormatter,
+			description='Extract dN/dS values from HyPhy output for non-gap sites',
+	        epilog=textwrap.dedent('''\
+            This script produces a CSV with the following columns:
+            
+            Column name           Description
+            ===================================================================
+            fasta_position        Site number of the reference sequence
+                                  
+            fasta_aa              Amino acid of the reference sequence
+            
+            dN/dS                 Site-wise dN/dS, calculated from HyPhy output.
+                                  dN='beta'
+                                  dS='alpha'
+
+            LRT                   Likelihood ration test statistic for 
+                                  beta = alpha, versus beta does not equal alpha
+                       
+            p-value               p-value for the LRT 
+            
+            Total_branch_length   The total length of branches contributing 
+                                  to inference at this site, and used to 
+                                  scale dN-dS
+            '''))
+
 	#adding arguments 
 	parser.add_argument('-a', metavar='<aa_aln.fasta>', type=str, help='input amino acid alignment file')
-	parser.add_argument('-r', metavar='<rates.csv>', type=str, help='HyPhy FEL1 file')
-	parser.add_argument('-o', metavar='<processed_rates.csv>', type=str, help='output processed rates file')
+	parser.add_argument('-r', metavar='<rates.csv>', type=str, help='HyPhy FEL file')
+	parser.add_argument('-o', metavar='<trimmed_dNdS.csv>', type=str, help='output trimmed rates file')
 
 	args = parser.parse_args()
 
 	#set up output file name if none is given
 	if args.o is None:
-		out_rates = "processed_"+args.r
+		out_rates = "trimmed_"+args.r
 	else:
 		out_rates = args.o
 		

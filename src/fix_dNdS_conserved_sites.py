@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
 '''
-This script fixes HyPhy's FEL1 site-wise dN/dS values. The script finds convserved sites in a sequence alignment and assigns these sites dN/dS of 0.  
+This script changes HyPhy's FEL one-rate dN/dS values. The script finds convserved sites in a sequence alignment and assigns these sites dN/dS of 0.  
 
 Author: Dariya K. Sydykova
 '''
 
 import argparse
+import textwrap
 from Bio import AlignIO
 
 def fix_dNdS(aln, rates_file, out_file):
@@ -60,7 +61,32 @@ def main():
 	Find conserved sites and assign them dN/dS=0
 	'''
 	#creating a parser
-	parser = argparse.ArgumentParser(description='Find conserved sites and assign them dN/dS=0')
+	parser = argparse.ArgumentParser(
+	        formatter_class=argparse.RawDescriptionHelpFormatter,
+			description='Find conserved sites and assign them dN/dS=0',
+	        epilog=textwrap.dedent('''\
+            This script produces a CSV with the following columns:
+            
+            Column name           Description
+            ===================================================================
+            Site                  Site number, extracted from the alignment 
+                                  FASTA file.
+
+            dN/dS                 Site-wise dN/dS, calculated from HyPhy output.
+                                  dN='beta'
+                                  dS='alpha'
+
+            LRT                   Likelihood ration test statistic for 
+                                  beta = alpha, versus beta does not equal alpha
+                       
+            p-value               Likelihood ration test statistic for 
+                                  beta = alpha, versus beta does not equal alpha 
+            
+            Total_branch_length   The total length of branches contributing 
+                                  to inference at this site, and used to 
+                                  scale dN-dS
+            '''))
+
 	#adding arguments 
 	parser.add_argument('-a', metavar='<aa_aln.fasta>', type=str, help='input amino acid alignment file')
 	parser.add_argument('-r', metavar='<rates.csv>', type=str, help='HyPhy FEL1 file')

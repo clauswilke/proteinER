@@ -73,7 +73,7 @@ def main():
 	Back translate aligned amino acid sequences to nucleotide sequences while maintaining the alignment
 	'''
 	#creating a parser
-	parser = argparse.ArgumentParser(description='Translate amino acid sequences into nucleotide sequences')
+	parser = argparse.ArgumentParser(description='Translate amino acid sequences into nucleotide sequences while maintaining the amino acid alignment and the order of sequences.')
 	#adding arguments 
 	parser.add_argument('-a', metavar='<aa_aln.fasta>', type=str, 
 	help='input amino acid alignment file')
