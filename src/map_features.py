@@ -8,6 +8,7 @@ Author: Benjamin R. Jack
 
 import os
 import argparse
+import textwrap
 import pandas as pd
 
 
@@ -73,12 +74,12 @@ def align_features(seq_map, features):
 
 def main():
     '''
-    Align rate estimates with structural information using a 
+    Map rate estimates to structural information using a 
     sequence-to-structure map.
     '''
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description='Align rate estimates with structural information using a'
+        description='Map rate estimates to structural information using a'
                     'sequence-to-structure map.'
     )
     parser.add_argument('map', metavar='<map>', type=str,

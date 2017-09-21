@@ -2,7 +2,7 @@ library(dplyr)
 library(readr)
 library(cowplot)
 
-my_data <- read_csv("../aligning_structural_features/3rze.map.rates_features.csv") %>%
+my_data <- read_csv("../map_structural_features/3rze.map.rates_features.csv") %>%
   mutate(r4s_rate_norm = r4s_rate/mean(r4s_rate))  # Normalize rates to a mean of 1
 
 codon_wcn <- ggplot(my_data, aes(x = wcn_sc, y = `dN/dS`)) + 
