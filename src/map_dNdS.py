@@ -79,7 +79,7 @@ def main():
 
 	#set up output file name if none is given
 	if args.o is None:
-		out_rates = "trimmed_"+args.r
+		out_rates = "trimmed_dNdS.csv"
 	else:
 		out_rates = args.o
 		
