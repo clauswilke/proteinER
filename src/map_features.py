@@ -12,7 +12,7 @@ import textwrap
 import pandas as pd
 
 
-def import_rates(rate_files, seq_count):
+def import_rates(rate_files):
     '''
     Import rate files. Each file must contain a `fasta_position` column. The 
     number of rows must match the value of `seq_count`. 
@@ -20,13 +20,6 @@ def import_rates(rate_files, seq_count):
     rates = []
     for rate_file in rate_files:
         rates.append(pd.read_csv(rate_file))
-        if 'fasta_position' not in rates[-1].keys():
-            raise KeyError("Column `fasta_position` is missing from rate file '{}'. Without this column, features and rates cannot be aligned.".format(rate_file))
-        rate_count = len(rates[-1].index)
-        # if rate_count != seq_count:
-        #     raise RuntimeError(
-        #          "The number of positions in the sequence map do not match the number of positions in rate file '{}'.".format(rate_file))
-    
     return rates
 
 def import_features(feature_files, seq_count):
@@ -43,9 +36,9 @@ def import_features(feature_files, seq_count):
             raise KeyError(
                 "Column `pdb_position`, `pdb_aa`, or `chain` are missing from feature file '{}'. Without these columns, features and rates cannot be aligned.".format(feature_file))
         feature_count = len(features[-1].index)
-        # if feature_count != seq_count:
-        #     raise RuntimeError(
-        #         "The number of positions in the sequence map do not match the number of positions in feature file '{}'.".format(feature_file))
+        if feature_count != seq_count:
+            raise RuntimeError(
+                "The number of positions in the sequence map do not match the number of positions in feature file '{}'.".format(feature_file))
     
     return features
 
@@ -54,9 +47,8 @@ def align_rates(seq_map, rates):
     Join a list of rate dataframes to a mapping dataframe by columns
     `fasta_position` and `fasta_aa`.
     '''
-    rate_indices = ['fasta_position']
     for rate in rates:
-        seq_map = seq_map.set_index(rate_indices).join(rate.drop('fasta_aa', 1).set_index(rate_indices)).reset_index()
+        seq_map = seq_map.set_index('aln_position').join(rate.set_index('Site')).reset_index()
     
     return seq_map
 
@@ -104,7 +96,7 @@ def main():
     # Import sequence-to-structure map
     seq_map = pd.read_csv(args.map)
     # Import rates
-    rates = import_rates(args.r, seq_map['fasta_position'].count())
+    rates = import_rates(args.r)
     # Join rates to map
     seq_map = align_rates(seq_map, rates)
     

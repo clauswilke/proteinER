@@ -90,7 +90,6 @@ def make_map(alignment, residue_numbers, chain_name):
     pdb_index = 0
     # Track FASTA amino acid sequence position (starts at 1, not an index!)
     aln_position = 1
-    fasta_position = 1
     out_list = []
     for pdb_aa in pdb_aln:
         out_dict = {}
@@ -101,9 +100,7 @@ def make_map(alignment, residue_numbers, chain_name):
             out_dict['chain'] = chain_name
             pdb_index += 1
             out_dict['aln_position'] = aln_position
-            out_dict['fasta_position'] = fasta_position
             out_list.append(out_dict)
-            fasta_position += 1
         aln_position += 1
     return out_list
 
@@ -122,8 +119,6 @@ def main():
 
             Column name     Description
             ===================================================================
-            fasta_position  An index starting from 1.
-
             aln_position    Numeric position (column) in the multiple sequence
                             alignment extracted from FASTA file.
             
@@ -177,7 +172,7 @@ def main():
     # Write map to CSV
     with open(output_map, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
-                                fieldnames=['fasta_position', 'aln_position', 
+                                fieldnames=['aln_position', 
                                             'pdb_position', 'pdb_aa', 'chain'],
                                 extrasaction="ignore")
         writer.writeheader()
