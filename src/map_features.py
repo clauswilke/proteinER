@@ -23,9 +23,9 @@ def import_rates(rate_files, seq_count):
         if 'fasta_position' not in rates[-1].keys():
             raise KeyError("Column `fasta_position` is missing from rate file '{}'. Without this column, features and rates cannot be aligned.".format(rate_file))
         rate_count = len(rates[-1].index)
-        if rate_count != seq_count:
-            raise RuntimeError(
-                 "The number of positions in the sequence map do not match the number of positions in rate file '{}'.".format(rate_file))
+        # if rate_count != seq_count:
+        #     raise RuntimeError(
+        #          "The number of positions in the sequence map do not match the number of positions in rate file '{}'.".format(rate_file))
     
     return rates
 
@@ -43,9 +43,9 @@ def import_features(feature_files, seq_count):
             raise KeyError(
                 "Column `pdb_position`, `pdb_aa`, or `chain` are missing from feature file '{}'. Without these columns, features and rates cannot be aligned.".format(feature_file))
         feature_count = len(features[-1].index)
-        if feature_count != seq_count:
-            raise RuntimeError(
-                "The number of positions in the sequence map do not match the number of positions in feature file '{}'.".format(feature_file))
+        # if feature_count != seq_count:
+        #     raise RuntimeError(
+        #         "The number of positions in the sequence map do not match the number of positions in feature file '{}'.".format(feature_file))
     
     return features
 
@@ -54,9 +54,9 @@ def align_rates(seq_map, rates):
     Join a list of rate dataframes to a mapping dataframe by columns
     `fasta_position` and `fasta_aa`.
     '''
-    rate_indices = ['fasta_position', 'fasta_aa']
+    rate_indices = ['fasta_position']
     for rate in rates:
-        seq_map = seq_map.set_index(rate_indices).join(rate.set_index(rate_indices)).reset_index()
+        seq_map = seq_map.set_index(rate_indices).join(rate.drop('fasta_aa', 1).set_index(rate_indices)).reset_index()
     
     return seq_map
 

@@ -50,10 +50,10 @@ def run_mafft(fasta_aln, pdb_seq):
             # Temporary file for mafft output
             SeqIO.write(pdb_seq, temp_fasta.name, "fasta")
             try:
-                subprocess.call(['mafft-linsi', '--add', temp_fasta.name, 
-                                 fasta_aln],
-                                stdout=temp_aln,
-                                stderr=open(os.devnull, 'wb'))
+                print("Running mafft...\n")
+                subprocess.call(['mafft-linsi', '--keeplength', '--add',
+                                 temp_fasta.name, fasta_aln],
+                                 stdout=temp_aln)
             except:
                 raise RuntimeError('Call to mafft failed. Check that mafft is '
                                    'in your PATH.')
@@ -86,26 +86,25 @@ def make_map(alignment, residue_numbers, chain_name):
     '''
     # Split aligned sequences into two lists
     pdb_aln = list(alignment[-1])
-    print(pdb_aln)
     # Track *index* of where we are in the PDB amino acid sequence
     pdb_index = 0
     # Track FASTA amino acid sequence position (starts at 1, not an index!)
+    aln_position = 1
     fasta_position = 1
     out_list = []
     for pdb_aa in pdb_aln:
         out_dict = {}
+        # Skip any gaps
         if pdb_aa != '-':
             out_dict['pdb_position'] = residue_numbers[pdb_index]
             out_dict['pdb_aa'] = pdb_aa
             out_dict['chain'] = chain_name
             pdb_index += 1
-        else:
-            out_dict['pdb_position'] = ''
-            out_dict['pdb_aa'] = ''
-            out_dict['chain'] = ''
-        out_dict['aln_position'] = fasta_position
-        fasta_position += 1
-        out_list.append(out_dict)
+            out_dict['aln_position'] = aln_position
+            out_dict['fasta_position'] = fasta_position
+            out_list.append(out_dict)
+            fasta_position += 1
+        aln_position += 1
     return out_list
 
 def main():
@@ -123,6 +122,8 @@ def main():
 
             Column name     Description
             ===================================================================
+            fasta_position  An index starting from 1.
+
             aln_position    Numeric position (column) in the multiple sequence
                             alignment extracted from FASTA file.
             
@@ -176,10 +177,11 @@ def main():
     # Write map to CSV
     with open(output_map, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
-                                fieldnames=['aln_position', 'pdb_position',                 'pdb_aa', 'chain'],
+                                fieldnames=['fasta_position', 'aln_position', 
+                                            'pdb_position', 'pdb_aa', 'chain'],
                                 extrasaction="ignore")
         writer.writeheader()
         writer.writerows(output_list)
-    print("Map successfully generated.")
+    print("\nMap successfully generated.")
 if __name__ == "__main__":
     main()
