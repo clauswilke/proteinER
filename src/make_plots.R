@@ -19,5 +19,5 @@ aa_rsa <- ggplot(my_data, aes(x = rsa, y = `r4s_rate_norm`)) +
   geom_point(alpha = 0.5) +
   labs(x = 'RSA', y = 'rate4site score')
 
-all_plots <- plot_grid(codon_wcn, codon_rsa, aa_wcn, aa_rsa, nrow = 2, ncol = 2, labels = 'auto', scale = 0.95)
+all_plots <- plot_grid(codon_wcn, codon_rsa, aa_wcn, aa_rsa, nrow = 2, ncol = 2, align='vh', labels = 'auto', scale = 0.95)
 save_plot("../figures/scatterplots.pdf", all_plots, base_width = 8, base_height = 7)
