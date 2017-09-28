@@ -57,7 +57,7 @@ def main():
 
 	#set up output file name if none is given
 	if args.r is None:
-		out_rates = "site-rates.csv"
+		out_rates = "site_rates.csv"
 	else:
 		out_rates = args.r
 		
