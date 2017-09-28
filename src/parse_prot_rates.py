@@ -6,7 +6,9 @@ Parse HyPhy output file = protein rate JSON into a CSV
 Author: Stephanie J. Spielman, Dariya K. Sydykova
 '''
 
-import json, argparse
+import json
+import argparse
+import textwrap
 
 def parse_json(relprot_json_file, relprot_csv_file):
 
@@ -28,7 +30,25 @@ def main():
 	'''
 	
 	#creating a parser
-	parser = argparse.ArgumentParser(description='Parse relative protein rates json file to write csv file with site-wise rates.')
+	parser = argparse.ArgumentParser(
+	formatter_class=argparse.RawDescriptionHelpFormatter,
+	description='Parse relative protein rates json file to write csv file with site-wise rates.',
+	epilog=textwrap.dedent('''\
+            This script produces a CSV with the following columns: 
+			
+            Column name       Description
+            ===================================================================
+            Site              Site number, extracted from the alignment FASTA 
+                              file
+                                  
+            Rate              Maximum likelihood estimate of the rate
+            
+            lower_bound_95CI  Lower bound of the 95% confidence interval of the
+                              rate estimate
+            
+            upper_bound_95CI  Upper bound of the 95% confidence interval of the
+                              rate estimate      
+            '''))
 	#adding arguments 
 	parser.add_argument('-j', metavar='<site-rates.json>', type=str, help='input FEL json file')
 	parser.add_argument('-r', metavar='<rates.csv>', type=str, help='output csv file with site-wise rates')
