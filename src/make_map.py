@@ -43,21 +43,29 @@ def run_mafft(fasta_aln, pdb_seq):
     Align two Bio.SeqRecord sequences with mafft and return an a biopython 
     alignment object.
     '''
-    # sequences = [fasta_seq, pdb_seq]
-    with tempfile.NamedTemporaryFile() as temp_fasta:
-        # Temporary file for input pdb_seq fasta
-        with tempfile.NamedTemporaryFile() as temp_aln:
-            # Temporary file for mafft output
-            SeqIO.write(pdb_seq, temp_fasta.name, "fasta")
-            try:
-                print("Running mafft...\n")
-                subprocess.call(['mafft-linsi', '--keeplength', '--add',
-                                 temp_fasta.name, fasta_aln],
-                                 stdout=temp_aln)
-            except:
-                raise RuntimeError('Call to mafft failed. Check that mafft is '
-                                   'in your PATH.')
-            alignment = AlignIO.read(temp_aln.name, 'fasta')
+    # Open temporary files for mafft
+    temp_fasta_pdb = tempfile.NamedTemporaryFile()
+    temp_aln_clipped = tempfile.NamedTemporaryFile()
+    temp_aln_out = tempfile.NamedTemporaryFile()
+    # Temporary file for mafft output
+    SeqIO.write(pdb_seq, temp_fasta_pdb.name, "fasta")
+    try:
+        print("Running mafft...\n")
+        # Align sequences while keeping length
+        subprocess.call(['mafft-linsi', '--keeplength', '--add',
+                            temp_fasta_pdb.name, fasta_aln],
+                            stdout=temp_aln_clipped)
+        # Realign to see if pdb seq has been clipped on the ends
+        subprocess.call(['mafft-linsi', '--add',
+                         temp_fasta_pdb.name, temp_aln_clipped.name],
+                         stdout=temp_aln_out)
+    except:
+        raise RuntimeError('Call to mafft failed. Check that mafft is '
+                            'in your PATH.')
+    alignment = AlignIO.read(temp_aln_out.name, 'fasta')
+    temp_fasta_pdb.close()
+    temp_aln_clipped.close()
+    temp_aln_out.close()
     return alignment
 
 def load_pdb_chain(name, pdb_file, model_name, chain_name):
@@ -85,23 +93,40 @@ def make_map(alignment, residue_numbers, chain_name):
     to a CSV.
     '''
     # Split aligned sequences into two lists
-    pdb_aln = list(alignment[-1])
+    pdb_clipped = list(alignment[-2])
+    pdb_full = list(alignment[-1])
     # Track *index* of where we are in the PDB amino acid sequence
     pdb_index = 0
-    # Track FASTA amino acid sequence position (starts at 1, not an index!)
+    # Track alignment position (starts at 1, not an index!)
     aln_position = 1
     out_list = []
-    for pdb_aa in pdb_aln:
+    for pdb_clipped_aa, pdb_full_aa in zip(pdb_clipped, pdb_full):
         out_dict = {}
-        # Skip any gaps
-        if pdb_aa != '-':
+        if pdb_clipped_aa == '-' and pdb_full_aa == '-':
+            # This is a gap in the original alignment
+            out_dict['pdb_position'] = 'NA'
+            out_dict['pdb_aa'] = 'NA'
+            out_dict['chain'] = 'NA'
+            out_dict['aln_position'] = aln_position
+            aln_position += 1
+        elif pdb_clipped_aa == '-' and pdb_full_aa != '-':
+            # Part of pdb sequence must have been clipped off
             out_dict['pdb_position'] = residue_numbers[pdb_index]
-            out_dict['pdb_aa'] = pdb_aa
+            out_dict['pdb_aa'] = pdb_full_aa
+            out_dict['chain'] = chain_name
+            pdb_index += 1
+            out_dict['aln_position'] = 'NA'
+        elif pdb_clipped_aa != '-' and pdb_full_aa != '-':
+            out_dict['pdb_position'] = residue_numbers[pdb_index]
+            out_dict['pdb_aa'] = pdb_full_aa
             out_dict['chain'] = chain_name
             pdb_index += 1
             out_dict['aln_position'] = aln_position
-            out_list.append(out_dict)
-        aln_position += 1
+            aln_position += 1
+        else:
+            raise RuntimeError("The full PDB sequence contains a gap where the clipped PDB sequence does not. PDB sequence has mis-aligned to itself.")
+        out_list.append(out_dict)
+
     return out_list
 
 def main():
@@ -167,6 +192,7 @@ def main():
     pdb_record, residue_numbers = get_aa_seq(chain)
     # Align PDB to FASTA alignment
     alignment = run_mafft(args.fasta, pdb_record)
+    print(alignment)
     # Generate map
     output_list = make_map(alignment, residue_numbers, args.c)
     # Write map to CSV
