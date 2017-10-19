@@ -10,8 +10,8 @@ RequireVersion("2.3.4");
 */
 
 LoadFunctionLibrary("ProteinAnalyses/relative_prot_rates.bf", {
-                    "0": "/Users/dariyasydykova/Desktop/projects/proteinER/measuring_aa_rates/HRH1_aligned.fasta",
-                    "1": "/Users/dariyasydykova/Desktop/projects/proteinER/measuring_aa_rates/RAxML_bestTree.HRH1_tree",
+                    "0": "/path/to/HRH1_aligned.fasta",
+                    "1": "/path/to/RAxML_bestTree.HRH1_tree",
                     "2": "WAG",    
                     "3": "Yes"});
 

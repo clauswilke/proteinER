@@ -20,4 +20,14 @@ aa_rsa <- ggplot(my_data, aes(x = rsa, y = `Rate_norm`)) +
   labs(x = 'RSA', y = 'Relative rate')
 
 all_plots <- plot_grid(codon_wcn, codon_rsa, aa_wcn, aa_rsa, nrow = 2, ncol = 2, align='vh', labels = 'auto', scale = 0.95)
-save_plot("../figures/scatterplots.pdf", all_plots, base_width = 8, base_height = 7)
+save_plot("../figures/scatterplots.pdf", all_plots, base_width = 8, base_height = 8)
+
+#correlation tests 
+#WCN and dN/dS
+cor.test(my_data$wcn_sc,my_data$`dN/dS`)
+#RSA and dN/dS
+cor.test(my_data$rsa,my_data$`dN/dS`)
+#WCN and relative amino acid rate
+cor.test(my_data$wcn_sc,my_data$Rate_norm)
+#RSA and relative amino acid rate
+cor.test(my_data$rsa,my_data$Rate_norm)
