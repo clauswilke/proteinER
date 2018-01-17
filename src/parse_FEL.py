@@ -45,9 +45,9 @@ def main():
             Site                  Site number, extracted from the alignment 
                                   FASTA file
             
-            alpha                 Synonymous substitution rate at a site
+            alpha                 Synonymous substitution rate at a site (dS)
             
-            beta                  Non-synonymous substitution rate at a site
+            beta                  Non-synonymous substitution rate at a site (dN)
             
             alpha=beta            The rate estimate under the neutral model
 
@@ -74,7 +74,7 @@ def main():
 		out_rates = args.r
 		
 	json_file=args.j
-	rates_file=args.r
+	rates_file=out_rates
 
 	parse_json(json_file, rates_file)
 	

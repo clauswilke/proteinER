@@ -14,8 +14,8 @@ RequireVersion("2.3.3");
 
 LoadFunctionLibrary("SelectionAnalyses/FEL.bf", {
     "0": "Universal",
-    "1": "/path/to/HRH1_aligned_codon.fasta",
-    "2": "/path/to/RAxML_bestTree.HRH1_tree",
+    "1": "/Users/dariyasydykova/Desktop/projects/proteinER/measuring_dNdS/HRH1_aligned_codon.fasta",
+    "2": "/Users/dariyasydykova/Desktop/projects/proteinER/measuring_dNdS/RAxML_bestTree.HRH1_tree",
     "3": "All",
     "4": "No", 
     "5": "0.1"

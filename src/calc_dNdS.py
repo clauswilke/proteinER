@@ -1,16 +1,19 @@
 #!/usr/bin/python
 
 '''
-This script changes HyPhy's FEL one-rate dN/dS values. The script finds convserved sites in a sequence alignment and assigns these sites dN/dS of 0.  
+This script calculates site-specific dN/dS using HyPhy's FEL one-rate output. 
+
+HyPhy's FEL one-rate method assigns dS=1 to sites with substitutions. This script simply takes a site's dN and dS values and divides them dN/dS. This script also finds convserved sites in a sequence alignment and assigns these sites dN/dS=0.  
 
 Author: Dariya K. Sydykova
 '''
 
 import argparse
 import textwrap
+import sys
 from Bio import AlignIO
 
-def fix_dNdS(aln, rates_file, out_file):
+def calc_dNdS(aln, rates_file, out_file):
 
 	r=open(rates_file,"r")
 	out=open(out_file,"w")
@@ -29,6 +32,7 @@ def fix_dNdS(aln, rates_file, out_file):
 		else:
 			continue
 	
+	print(conserved_sites_lst)
 	for line in r:
 		if line.startswith("Site"):
 			token=line.split(",")
@@ -39,16 +43,19 @@ def fix_dNdS(aln, rates_file, out_file):
 		token=line.split(",")
 		site=token[0]
 		dS=float(token[1])
+		
+		if dS!=0.0 or dS!=1.0:
+			print("dS is not equal to 1 or 0")
+			print("Check HyPhy output")
+			sys.exit()
+			
 		dN=float(token[2])
 		
 		if dS==0:
 			dN_dS=0
-		elif dS==1:
-			dN_dS = dN
 		else:
-			print("dS is not equal 1")
-			sys.exit()
-		
+			dN_dS = dN/dS
+			
 		if site in conserved_sites_lst:
 			new_line = site+",0,"+",".join(token[4:])
 		else:
@@ -58,12 +65,12 @@ def fix_dNdS(aln, rates_file, out_file):
 
 def main():
 	'''
-	Find conserved sites and assign them dN/dS=0
+	Calculate site-specific dN/dS from HyPhy's FEL one-rate model output
 	'''
 	#creating a parser
 	parser = argparse.ArgumentParser(
 	        formatter_class=argparse.RawDescriptionHelpFormatter,
-			description='Find conserved sites and assign them dN/dS=0',
+			description="Calculate site-specific dN/dS from HyPhy's FEL one-rate model output",
 	        epilog=textwrap.dedent('''\
             This script produces a CSV with the following columns:
             
@@ -104,7 +111,7 @@ def main():
 	rates_file=args.r
 
 	aln = AlignIO.read(aln_file, "fasta") 
-	fix_dNdS(aln, rates_file, out_rates)
+	calc_dNdS(aln, rates_file, out_rates)
 
 if __name__ == "__main__":
 	main()

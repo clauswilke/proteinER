@@ -11,8 +11,8 @@ RequireVersion("2.3.7");
 */
 
 LoadFunctionLibrary("LEISR.bf", {
-                    "0": "/path/to/HRH1_aligned.fasta",
-                    "1": "/path/to/RAxML_bestTree.HRH1_tree",
+                    "0": "/Users/dariyasydykova/Desktop/projects/proteinER/measuring_aa_rates/HRH1_aligned.fasta",
+                    "1": "/Users/dariyasydykova/Desktop/projects/proteinER/measuring_aa_rates/RAxML_bestTree.HRH1_tree",
                     "2": "Protein",
                     "3": "WAG",    
                     "4": "No"});

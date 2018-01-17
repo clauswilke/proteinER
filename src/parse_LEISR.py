@@ -62,7 +62,7 @@ def main():
         out_rates = args.r
         
     json_file=args.j
-    rates_file=args.r
+    rates_file=out_rates
 
     parse_json(json_file, rates_file)
     
