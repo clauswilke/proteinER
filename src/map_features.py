@@ -48,8 +48,8 @@ def align_rates(seq_map, rates):
     `fasta_position` and `fasta_aa`.
     '''
     for rate in rates:
-        seq_map = seq_map.set_index('aln_position').join(rate.set_index('Site')).reset_index()
-    
+        seq_map = seq_map.set_index('aln_position').join(rate.set_index('Site')).reset_index() 
+    	
     return seq_map
 
 def align_features(seq_map, features):
@@ -59,9 +59,8 @@ def align_features(seq_map, features):
     '''
     pdb_indices = ['pdb_position', 'chain', 'pdb_aa']
     for feature in features:
-        seq_map = seq_map.set_index(pdb_indices).join(
-            feature.set_index(pdb_indices)).reset_index()
-
+        seq_map = seq_map.set_index(pdb_indices).join(feature.set_index(pdb_indices)).reset_index()
+    
     return seq_map
 
 def main():
@@ -107,6 +106,7 @@ def main():
     
     # Write aligned features and rates to CSV
     seq_map.to_csv(output_file, index=False)
+
 
 if __name__ == "__main__":
     main()
