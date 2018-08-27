@@ -53,7 +53,6 @@ def run_mafft(fasta_aln, pdb_seq):
     SeqIO.write(pdb_seq, temp_fasta_pdb.name, "fasta")
     try:
         print("Running mafft...\n")
-        print(temp_fasta_pdb.name, fasta_aln)
         # Align sequences while keeping length
         subprocess.call(['mafft-linsi', '--maxiterate', '0',
                          '--keeplength', '--add',
