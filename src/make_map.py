@@ -23,6 +23,7 @@ from Bio.PDB import PDBParser, is_aa
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+
 def get_aa_seq(chain):
     '''
     Extract amino acid sequence from a PDB chain object and return sequence as
@@ -33,10 +34,11 @@ def get_aa_seq(chain):
     for residue in chain:
         if is_aa(residue):
             aa_list.append(SCOPData.protein_letters_3to1[residue.resname])
-            residue_numbers.append(str(residue.get_id()[1]) + \
+            residue_numbers.append(str(residue.get_id()[1]) +
                                    residue.get_id()[2].strip())
     aa_seq = SeqRecord(Seq(''.join(aa_list)), id='pdb_seq', description='')
     return aa_seq, residue_numbers
+
 
 def run_mafft(fasta_aln, pdb_seq):
     '''
@@ -51,22 +53,25 @@ def run_mafft(fasta_aln, pdb_seq):
     SeqIO.write(pdb_seq, temp_fasta_pdb.name, "fasta")
     try:
         print("Running mafft...\n")
+        print(temp_fasta_pdb.name, fasta_aln)
         # Align sequences while keeping length
-        subprocess.call(['mafft-linsi', '--keeplength', '--add',
-                            temp_fasta_pdb.name, fasta_aln],
-                            stdout=temp_aln_clipped)
+        subprocess.call(['mafft-linsi', '--maxiterate', '0',
+                         '--keeplength', '--add',
+                         temp_fasta_pdb.name, fasta_aln],
+                        stdout=temp_aln_clipped)
         # Realign to see if pdb seq has been clipped on the ends
         subprocess.call(['mafft-linsi', '--add',
                          temp_fasta_pdb.name, temp_aln_clipped.name],
-                         stdout=temp_aln_out)
+                        stdout=temp_aln_out)
     except:
         raise RuntimeError('Call to mafft failed. Check that mafft is '
-                            'in your PATH.')
+                           'in your PATH.')
     alignment = AlignIO.read(temp_aln_out.name, 'fasta')
     temp_fasta_pdb.close()
     temp_aln_clipped.close()
     temp_aln_out.close()
     return alignment
+
 
 def load_pdb_chain(name, pdb_file, model_name, chain_name):
     '''
@@ -85,6 +90,7 @@ def load_pdb_chain(name, pdb_file, model_name, chain_name):
         raise RuntimeError('PDB chain could not be found. Please inspect PDB'
                            'file and specify chain for map.')
     return chain
+
 
 def make_map(alignment, residue_numbers, chain_name):
     '''
@@ -124,10 +130,12 @@ def make_map(alignment, residue_numbers, chain_name):
             out_dict['aln_position'] = aln_position
             aln_position += 1
         else:
-            raise RuntimeError("The full PDB sequence contains a gap where the clipped PDB sequence does not. PDB sequence has mis-aligned to itself.")
+            raise RuntimeError(
+                "The full PDB sequence contains a gap where the clipped PDB sequence does not. PDB sequence has mis-aligned to itself.")
         out_list.append(out_dict)
 
     return out_list
+
 
 def main():
     '''
@@ -185,7 +193,7 @@ def main():
     # Load chain
     print("Extracted amino acid sequence from chain '{}' in model '{}' of PDB "
           "file '{}'.".format(args.c, args.m, args.pdb))
-    print("If you would like to specify a different chain or model, please " 
+    print("If you would like to specify a different chain or model, please "
           "run `make_map.py -h` for help.\n")
     chain = load_pdb_chain(pdb_name.upper(), args.pdb, args.m, args.c)
     # Extract PDB numbering and amino acid sequence
@@ -198,11 +206,13 @@ def main():
     # Write map to CSV
     with open(output_map, 'w') as csvfile:
         writer = csv.DictWriter(csvfile,
-                                fieldnames=['aln_position', 
+                                fieldnames=['aln_position',
                                             'pdb_position', 'pdb_aa', 'chain'],
                                 extrasaction="ignore")
         writer.writeheader()
         writer.writerows(output_list)
     print("\nMap successfully generated.")
+
+
 if __name__ == "__main__":
     main()
