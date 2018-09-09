@@ -88,9 +88,9 @@ def main():
     '''
     # creating a parser
     parser = argparse.ArgumentParser(
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            description="Calculate site-specific dN/dS from HyPhy's FEL one-rate model output",
-            epilog=textwrap.dedent('''\
+            formatter_class = argparse.RawDescriptionHelpFormatter,
+            description = "Calculate site-specific dN/dS from HyPhy's FEL one-rate model output",
+            epilog = textwrap.dedent('''\
             This script produces a CSV with the following columns:
             
             Column name           Description
