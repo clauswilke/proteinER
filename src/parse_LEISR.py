@@ -6,15 +6,16 @@ Parse HyPhy output file = protein rate JSON into a CSV
 Author: Stephanie J. Spielman, Dariya K. Sydykova
 '''
 
+# load packages required to run this script
 import json
 import argparse
 import textwrap
 
+# this function produces a CSV file from a JSON file outputted by HyPhy
 def parse_json(relprot_json_file, relprot_csv_file):
 
     with open (relprot_json_file , "rU") as f:
         parsed_json = json.load(f)
-
 
     site_block =  parsed_json[ "MLE" ][ "content" ][ "0" ]
     final_header = "Site,Rate,lower_bound_95CI,upper_bound_95CI\n"
@@ -31,9 +32,9 @@ def main():
     
     #creating a parser
     parser = argparse.ArgumentParser(
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    description='Parse relative protein rates json file to write csv file with site-wise rates.',
-    epilog=textwrap.dedent('''\
+    formatter_class = argparse.RawDescriptionHelpFormatter,
+    description = 'Parse relative protein rates json file to write csv file with site-wise rates.',
+    epilog = textwrap.dedent('''\
             This script produces a CSV with the following columns: 
             
             Column name       Description
@@ -50,8 +51,8 @@ def main():
                               rate estimate      
             '''))
     #adding arguments 
-    parser.add_argument('-j', metavar='<LEISR.json>', type=str, help='input LEISR json file')
-    parser.add_argument('-r', metavar='<rates.csv>', type=str, help='output csv file with site-wise rates')
+    parser.add_argument('-j', metavar = '<LEISR.json>', type = str, help = 'input LEISR json file')
+    parser.add_argument('-r', metavar = '<rates.csv>', type = str, help = 'output csv file with site-wise rates')
 
     args = parser.parse_args()
 
@@ -60,9 +61,10 @@ def main():
         out_rates = "site_rates.csv"
     else:
         out_rates = args.r
-        
-    json_file=args.j
-    rates_file=out_rates
+
+    # store inputted arguments as variables
+    json_file = args.j
+    rates_file = out_rates
 
     parse_json(json_file, rates_file)
     
