@@ -5,10 +5,13 @@ Parse HyPhy output file =  FEL JSON into a CSV, **assuming a single partition**
 
 Author: Stephanie J. Spielman, Dariya K. Sydykova
 '''
+
+# load packages required to run this script
 import json
 import argparse
 import textwrap
 
+# this function produces a CSV file from a JSON file outputted by HyPhy
 def parse_json(fel_json_file, fel_csv_file):
 
     with open (fel_json_file , "rU") as f:
@@ -34,9 +37,9 @@ def main():
     
     #creating a parser
     parser = argparse.ArgumentParser(
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-            description='Parse FEL json file to write csv file with site-wise dN/dS.',
-            epilog=textwrap.dedent('''\
+    formatter_class = argparse.RawDescriptionHelpFormatter,
+            description = 'Parse FEL json file to write csv file with site-wise dN/dS.',
+            epilog = textwrap.dedent('''\
             This script produces a CSV with the following columns: 
             (Descriptions are directly borrowed from HyPhy json file)
             
@@ -61,20 +64,21 @@ def main():
                                   to inference at this site, and used to 
                                   scale dN-dS
             '''))
-    #adding arguments 
-    parser.add_argument('-j', metavar='<site-rates.json>', type=str, help='input FEL json file')
-    parser.add_argument('-r', metavar='<rates.csv>', type=str, help='output csv file with site-wise rates')
+    # adding arguments 
+    parser.add_argument('-j', metavar = '<site-rates.json>', type = str, help = 'input FEL json file')
+    parser.add_argument('-r', metavar = '<rates.csv>', type = str, help = 'output csv file with site-wise rates')
 
     args = parser.parse_args()
 
-    #set up output file name if none is given
+    # set up output file name if none is given
     if args.r is None:
         out_rates = "site_rates.csv"
     else:
         out_rates = args.r
-        
-    json_file=args.j
-    rates_file=out_rates
+
+    # store inputted arguments as variables
+    json_file = args.j
+    rates_file = out_rates
 
     parse_json(json_file, rates_file)
     
