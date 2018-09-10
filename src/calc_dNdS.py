@@ -114,9 +114,9 @@ def main():
             '''))
 
     # adding arguments 
-    parser.add_argument('-a', metavar='<aa_aln.fasta>', type=str, help='input amino acid alignment file')
-    parser.add_argument('-r', metavar='<rates.csv>', type=str, help='HyPhy FEL file')
-    parser.add_argument('-o', metavar='<processed_rates.csv>', type=str, help='output processed rates file')
+    parser.add_argument('-a', metavar = '<aa_aln.fasta>', type = str, help = 'input amino acid alignment file')
+    parser.add_argument('-r', metavar = '<rates.csv>', type = str, help = 'HyPhy FEL file')
+    parser.add_argument('-o', metavar = '<processed_rates.csv>', type = str, help = 'output processed rates file')
 
     args = parser.parse_args()
 
@@ -127,8 +127,8 @@ def main():
         out_rates = args.o
         
     # store inputted arguments as variables
-    aln_file=args.a
-    rates_file=args.r
+    aln_file = args.a
+    rates_file = args.r
 
     # read an alignment file in FASTA format
     aln = AlignIO.read(aln_file, "fasta")
