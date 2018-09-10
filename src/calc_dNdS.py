@@ -56,21 +56,21 @@ def calc_dNdS(aln, rates_file, out_file):
         site = token[0]
         dS = float(token[1])
         dN = float(token[2])
+
+        # check if a site's dS was set to 0 or 1 by the HyPhy output
+        # if it wasn't, this script will stop running because this script is intended to work only with HyPhy's one-rate inference method
+        if dS != 0.0 and dS != 1.0:
+            print("dS is not equal to 1 or 0")
+            print("Check HyPhy output")
+            sys.exit()
         
         # calculate a site's dN/dS
         # if site dS = 0, set dN/dS = 0
-        if abs(dS - 0.0) <= 0.000000000001:
+        if dS == 0:
             dN_dS = 0
         # else, calculate dN/dS by dividing site's dN by the site's dS
         else:
-            # check if a site's dS was set to 1 by the HyPhy output
-            # if it wasn't, this script will stop running because this script is intended to work only with HyPhy's one-rate inference method
-            if abs(dS - 1.0) > 0.000000000001: 
-                print("dS is not equal to 1")
-                print("Check HyPhy output")
-                sys.exit()
-            else:
-                dN_dS = dN/dS
+            dN_dS = dN/dS
             
         # if a sites position is stored in the list with conserved sites, set dN/dS = 0 and write a new line that contains all of the HyPhy output and dN/dS of 0
         if site in conserved_sites_lst:
